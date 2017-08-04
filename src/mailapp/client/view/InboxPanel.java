@@ -24,15 +24,15 @@ import mailapp.User;
 public class InboxPanel extends JPanel{
     private User user;
     
-    private JButton jButton1;
-    private JButton jButton2;
+    private JButton newMailButton;
+    private JButton deleteMailButton;
     private JButton jButton3;
-    private JLabel jLabel2;
+    private JLabel welcomeLabel;
     private JLabel jLabel3;
     private JList<EMail> mailList;
     private DefaultListModel<EMail> listModel;
-    private JPanel jPanel3;
-    private JPanel jPanel4;
+    private JPanel leftPanel;
+    private JPanel rightPanel;
     private JPanel buttonsPanel;
     private JScrollPane jScrollPane1;
     
@@ -65,39 +65,34 @@ public class InboxPanel extends JPanel{
     }
     
     public InboxPanel(){
-        jPanel3 = new JPanel();
-        jLabel2 = new JLabel();
-        jLabel3 = new JLabel();
-        jPanel4 = new JPanel();
+        leftPanel = new JPanel();
+        welcomeLabel = new JLabel();
+        jLabel3 = new JLabel("");
+        rightPanel = new JPanel();
         buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        jButton1 = new JButton();
-        jButton2 = new JButton();
+        newMailButton = new JButton("New Mail");
+        deleteMailButton = new JButton("Delete");
         jButton3 = new JButton();
         jScrollPane1 = new JScrollPane();
         mailList = new JList<>();
 
         setLayout(new BorderLayout());
+        
+        leftPanel.add(welcomeLabel);
 
-        jLabel2.setText("jLabel2");
-        jPanel3.add(jLabel2);
+        leftPanel.add(jLabel3);
 
-        jLabel3.setText("jLabel3");
-        jPanel3.add(jLabel3);
+        add(leftPanel, java.awt.BorderLayout.LINE_START);
 
-        add(jPanel3, java.awt.BorderLayout.LINE_START);
+        rightPanel.setLayout(new java.awt.BorderLayout());
 
-        jPanel4.setLayout(new java.awt.BorderLayout());
-
-        jButton1.setText("jButton1");
-        buttonsPanel.add(jButton1);
-
-        jButton2.setText("jButton2");
-        buttonsPanel.add(jButton2);
+        buttonsPanel.add(newMailButton);
+        buttonsPanel.add(deleteMailButton);
 
         jButton3.setText("jButton3");
         buttonsPanel.add(jButton3);
 
-        jPanel4.add(buttonsPanel, BorderLayout.PAGE_START);
+        rightPanel.add(buttonsPanel, BorderLayout.PAGE_START);
         
         
         EMail[] mailArray = new EMail[3];
@@ -137,9 +132,9 @@ public class InboxPanel extends JPanel{
         mailList.setModel(listModel);
         jScrollPane1.setViewportView(mailList);
 
-        jPanel4.add(jScrollPane1, BorderLayout.CENTER);
+        rightPanel.add(jScrollPane1, BorderLayout.CENTER);
 
-        add(jPanel4, BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.CENTER);
         
         this.setBorder(new EmptyBorder(10,10,10,10));
         
@@ -149,5 +144,6 @@ public class InboxPanel extends JPanel{
     
     public void setUser(User u){
         user = u;
+        welcomeLabel.setText("Welcome back, "+user.getName());
     }
 }
