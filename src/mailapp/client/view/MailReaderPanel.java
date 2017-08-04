@@ -38,12 +38,20 @@ public class MailReaderPanel extends javax.swing.JPanel {
     private JLabel toLabel;
     private JPanel topPanel;
     
+    private EMail readingMail; 
+    
     private class ButtonsListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent ae) {
             if(ae.getActionCommand().equals("Back")){
                 MailAppClient.getInstance().showInboxPanel();
+            }
+            else if(ae.getActionCommand().equals("Forward")){
+                MailAppClient.getInstance().showMailWriterPanel(readingMail, EMail.Type.FORWARD);
+            }
+            else if(ae.getActionCommand().equals("Reply")){
+                MailAppClient.getInstance().showMailWriterPanel(readingMail, EMail.Type.REPLY);
             }
         }
         
@@ -148,6 +156,8 @@ public class MailReaderPanel extends javax.swing.JPanel {
     }
     
     public void showMail(EMail mail){
+        readingMail = mail;
+        
         actualSubjectLabel.setText(mail.getSubject());
         
         actualFromLabel.setText(mail.getSender().getName() + " <"+mail.getSender().getAddress()+">");
@@ -161,8 +171,7 @@ public class MailReaderPanel extends javax.swing.JPanel {
         }
         actualToLabel.setText(toStr);
         
-        Format formatter = new SimpleDateFormat("dd/MM/yyyy   HH:mm:ss");
-        actualDateLabel.setText(formatter.format(mail.getDate()));
+        actualDateLabel.setText(mail.getDateString());
         
         messageTextArea.setText(mail.getBody());
     }

@@ -47,9 +47,7 @@ public class InboxMailRenderer extends JPanel implements ListCellRenderer{
         
         subjectLabel.setText(mail.getSubject());
         
-        Format formatter = new SimpleDateFormat("dd/MM/yyyy   HH:mm:ss");
-        String dateStr = formatter.format(mail.getDate());
-        dateLabel.setText(dateStr);
+        dateLabel.setText(mail.getDateString());
         
         if (isSelected) {
             setBackground(list.getSelectionBackground());

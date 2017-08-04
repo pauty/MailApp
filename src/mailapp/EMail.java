@@ -1,6 +1,8 @@
 
 package mailapp;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -17,6 +19,13 @@ public class EMail {
     private Date date;
     private int priority;
     private int replyTo;
+    
+    public enum Type{
+        NEW,
+        FORWARD,
+        REPLY,
+        REPLY_ALL
+    }
     
     public EMail(int id, User from, ArrayList<User> to, String subj, String b, Date d, int p){
         ID = id;
@@ -58,6 +67,11 @@ public class EMail {
 
     public int getPriority() {
         return priority;
+    }
+    
+    public String getDateString(){
+        Format formatter = new SimpleDateFormat("dd/MM/yyyy   HH:mm:ss");
+        return formatter.format(date);
     }
     
     

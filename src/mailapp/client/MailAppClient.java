@@ -31,7 +31,7 @@ public class MailAppClient extends JFrame{
     
     private InboxPanel inboxPanel;
     private MailReaderPanel mailReaderPanel;
-    //private MailWriterPanel mailWriterPanel;
+    private MailWriterPanel mailWriterPanel;
     
     private class loginButtonListener implements ActionListener{
         @Override
@@ -88,11 +88,13 @@ public class MailAppClient extends JFrame{
         mailReaderPanel = new MailReaderPanel();
         
         //create mail writer panel
+        mailWriterPanel = new MailWriterPanel();
         
         //add switching panels to card layout
         getContentPane().add(userSelectionPanel, "userSelection");
         getContentPane().add(inboxPanel, "inbox");
         getContentPane().add(mailReaderPanel, "mailReader");
+        getContentPane().add(mailWriterPanel, "mailWriter");
         
         
         
@@ -119,8 +121,9 @@ public class MailAppClient extends JFrame{
         
     }
     
-    public void showMailWriterPanel(EMail mail, boolean isReply){
-        
+    public void showMailWriterPanel(EMail mail, EMail.Type t){
+        mailWriterPanel.initFields(mail, t);
+        ((CardLayout)this.getContentPane().getLayout()).show(this.getContentPane(),"mailWriter");
     }
     /**
      * @param args the command line arguments

@@ -40,7 +40,14 @@ public class InboxPanel extends JPanel{
 
         @Override
         public void actionPerformed(ActionEvent ae) {
-            
+            if(ae.getActionCommand().equals("New Mail")){
+                MailAppClient.getInstance().showMailWriterPanel(null, EMail.Type.NEW);
+            }
+            else if(ae.getActionCommand().equals("Delete")){
+            }
+            else{
+                //SOULD NOT BE HERE
+            }
         }
         
     }
@@ -94,6 +101,10 @@ public class InboxPanel extends JPanel{
 
         rightPanel.add(buttonsPanel, BorderLayout.PAGE_START);
         
+        ButtonsListener buttonListener = new ButtonsListener();
+        newMailButton.addActionListener(buttonListener);
+        deleteMailButton.addActionListener(buttonListener);
+        
         
         EMail[] mailArray = new EMail[3];
         User u = new User("bubba","bubba@mail.com");
@@ -144,6 +155,6 @@ public class InboxPanel extends JPanel{
     
     public void setUser(User u){
         user = u;
-        welcomeLabel.setText("Welcome back, "+user.getName());
+        welcomeLabel.setText("Welcome back, " + user.getName());
     }
 }

@@ -3,8 +3,11 @@ package mailapp.client.view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import mailapp.EMail;
+import mailapp.User;
 
-public class MailWriterPanel extends javax.swing.JPanel {
+public class MailWriterPanel extends JPanel {
     private JPanel buttonsPanel;
     private JButton cancelButton;
     private JPanel fieldsPanel;
@@ -19,7 +22,9 @@ public class MailWriterPanel extends javax.swing.JPanel {
     private JLabel toLabel;
     private JPanel topPanel;
     
-    public MailWriterPanel() {
+    private int inReplyTo;
+    
+    public MailWriterPanel(){
         
         topPanel = new JPanel();
         formalLabelPanel = new JPanel();
@@ -83,6 +88,47 @@ public class MailWriterPanel extends javax.swing.JPanel {
         messagePanel.add(messageScrollPane);
 
         add(messagePanel, BorderLayout.CENTER);
+    }
+    
+    public void initFields(EMail mail, EMail.Type t){
+        subjectField.setText("");
+        toField.setText("");
+        messageTextArea.setText("");
+        switch(t){
+            case NEW:
+                break;
+            case FORWARD:
+                if(!mail.getSubject().contains("Fw: ")){
+                    subjectField.setText("Fw: " + mail.getSubject());
+                }
+                messageTextArea.setText("\n\n----------------------------------------------------------------\n\n");
+                messageTextArea.append("original message:\n\n");
+                messageTextArea.append("Subject: " + mail.getSubject() + "\n");
+                messageTextArea.append("From: " + mail.getSender().getAddress() + "\n");
+                ArrayList<User> userList = mail.getReceivers();
+                String userStr = "";
+                for(int i = 0; i < userList.size(); i++){
+                    userStr += userList.get(i).getAddress();
+                    if( i < userList.size() -1)
+                        userStr += ", ";
+                }
+                messageTextArea.append("To: " + userStr + "\n");
+                messageTextArea.append("Date: " + mail.getDateString());
+                messageTextArea.append("\n\n" + mail.getBody());
+                break;
+            case REPLY:
+                inReplyTo = mail.getID();
+                if(!mail.getSubject().contains("Re: ")){
+                    subjectField.setText("Re: " + mail.getSubject());
+                }
+                toField.setText(mail.getSender().getAddress());
+                messageTextArea.setText("\n\n----------------------------------------------------------------\n\n");
+                messageTextArea.append("in date " + mail.getDateString() +" "+mail.getSender().getAddress()+" wrote:\n\n");
+                messageTextArea.append(mail.getBody());
+                break;
+            case REPLY_ALL:
+                break;
+        }
     }
                  
 }
