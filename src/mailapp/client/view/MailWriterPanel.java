@@ -3,9 +3,12 @@ package mailapp.client.view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import mailapp.EMail;
 import mailapp.User;
+import mailapp.client.connection.ConnectionManager;
 
 public class MailWriterPanel extends JPanel {
     private JPanel buttonsPanel;
@@ -23,6 +26,31 @@ public class MailWriterPanel extends JPanel {
     private JPanel topPanel;
     
     private int inReplyTo;
+    
+    private class ButtonsListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            if(ae.getActionCommand().equals("Cancel")){
+                Object[] options = {"Yes","No"};
+                int res = JOptionPane.showOptionDialog(new JDialog(),
+                    "You haven't send this mail.\nAre you sure you want to discard it?",
+                    "Warning",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,     //do not use a custom Icon
+                    options,  //the titles of buttons
+                    options[0]); //default button title
+                if(res == JOptionPane.YES_OPTION){
+                    MailAppClientView.getInstance().showInboxPanel();
+                }
+            }
+            else if(ae.getActionCommand().equals("Send")){
+                
+            }
+        }
+    
+    }
     
     public MailWriterPanel(){
         
@@ -73,6 +101,10 @@ public class MailWriterPanel extends JPanel {
 
         sendButton.setFont(new Font("Noto Sans", 1, 16));
         buttonsPanel.add(sendButton);
+        
+        ActionListener listener = new ButtonsListener();
+        cancelButton.addActionListener(listener);
+        sendButton.addActionListener(listener);
 
         topPanel.add(buttonsPanel, BorderLayout.EAST);
 
@@ -81,8 +113,6 @@ public class MailWriterPanel extends JPanel {
         messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.LINE_AXIS));
 
-        messageTextArea.setColumns(20);
-        messageTextArea.setRows(5);
         messageScrollPane.setViewportView(messageTextArea);
 
         messagePanel.add(messageScrollPane);
@@ -91,11 +121,15 @@ public class MailWriterPanel extends JPanel {
     }
     
     public void initFields(EMail mail, EMail.Type t){
+        //reset
         subjectField.setText("");
         toField.setText("");
         messageTextArea.setText("");
+        inReplyTo = -1;
+        
         switch(t){
             case NEW:
+                //nothing to do
                 break;
             case FORWARD:
                 if(!mail.getSubject().contains("Fw: ")){
@@ -105,29 +139,34 @@ public class MailWriterPanel extends JPanel {
                 messageTextArea.append("original message:\n\n");
                 messageTextArea.append("Subject: " + mail.getSubject() + "\n");
                 messageTextArea.append("From: " + mail.getSender().getAddress() + "\n");
-                ArrayList<User> userList = mail.getReceivers();
-                String userStr = "";
-                for(int i = 0; i < userList.size(); i++){
-                    userStr += userList.get(i).getAddress();
-                    if( i < userList.size() -1)
-                        userStr += ", ";
-                }
-                messageTextArea.append("To: " + userStr + "\n");
-                messageTextArea.append("Date: " + mail.getDateString());
-                messageTextArea.append("\n\n" + mail.getBody());
+                messageTextArea.append("To: " + User.printUserAddressesList(mail.getReceivers(), ", ") + "\n");
+                messageTextArea.append("Date: " + mail.getDateString("dd/MM/yyyy   HH:mm:ss") + "\n");
+                messageTextArea.append("\n" + mail.getBody());
                 break;
             case REPLY:
+            case REPLY_ALL:
                 inReplyTo = mail.getID();
+                //set subject
                 if(!mail.getSubject().contains("Re: ")){
                     subjectField.setText("Re: " + mail.getSubject());
                 }
-                toField.setText(mail.getSender().getAddress());
+                else{
+                    subjectField.setText(mail.getSubject());
+                }
+                //set to
+                if(t == EMail.Type.REPLY){
+                    toField.setText(mail.getSender().getAddress());
+                }
+                else{
+                    ArrayList<User> userList= new ArrayList<User>(mail.getReceivers());
+                    userList.remove(ConnectionManager.getInstance().getCurrentUser());
+                    toField.setText(User.printUserAddressesList(userList, ", "));
+                }
+                //show previous message
                 messageTextArea.setText("\n\n----------------------------------------------------------------\n\n");
-                messageTextArea.append("in date " + mail.getDateString() +" "+mail.getSender().getAddress()+" wrote:\n\n");
+                messageTextArea.append("in date " + mail.getDateString("dd/MM/yyyy HH:mm:ss") +" "+mail.getSender().getAddress()+" wrote:\n\n");
                 messageTextArea.append(mail.getBody());
-                break;
-            case REPLY_ALL:
-                break;
+                break;   
         }
     }
                  

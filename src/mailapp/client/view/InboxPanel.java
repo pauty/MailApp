@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package mailapp.client.view;
-import mailapp.client.MailAppClient;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,8 +21,6 @@ import mailapp.User;
  * @author pauty
  */
 public class InboxPanel extends JPanel{
-    private User user;
-    
     private JButton newMailButton;
     private JButton deleteMailButton;
     private JButton jButton3;
@@ -41,7 +38,7 @@ public class InboxPanel extends JPanel{
         @Override
         public void actionPerformed(ActionEvent ae) {
             if(ae.getActionCommand().equals("New Mail")){
-                MailAppClient.getInstance().showMailWriterPanel(null, EMail.Type.NEW);
+                MailAppClientView.getInstance().showMailWriterPanel(null, EMail.Type.NEW);
             }
             else if(ae.getActionCommand().equals("Delete")){
             }
@@ -62,7 +59,7 @@ public class InboxPanel extends JPanel{
             }  
             int index = mailList.locationToIndex(me.getPoint());
             if(index == previousSelectedIndex){
-                MailAppClient.getInstance().showMailReaderPanel(listModel.get(index));
+                MailAppClientView.getInstance().showMailReaderPanel(listModel.get(index));
             }
             else{
                 previousSelectedIndex = index;
@@ -108,13 +105,17 @@ public class InboxPanel extends JPanel{
         
         EMail[] mailArray = new EMail[3];
         User u = new User("bubba","bubba@mail.com");
-        ArrayList userList = new ArrayList<User>();
+        User u2 = new User("zzz","turing@mailapp.com");
+        ArrayList<User> userList = new ArrayList<User>();
         userList.add(u);
         userList.add(u);
-        mailArray[0] = new EMail(-1, u, userList, "testmail1", "body here eee", new Date(), 0 );
-        mailArray[1] = new EMail(-1, u, userList, "testmail2", "haha", new Date(), 0 );
-        mailArray[2] = new EMail(-1, u, userList, "testmail3", "body here qqq", new Date(), 0 );
+        userList.add(u2);
+        mailArray[0] = new EMail(-1, u, userList, "testmail1", "body here eee", new Date(), 0 ,0);
+        mailArray[1] = new EMail(-1, u, userList, "testmail2", "haha", new Date(), 0 ,0);
+        mailArray[2] = new EMail(-1, u, userList, "testmail3", "body here qqq", new Date(), 0 ,0);
+        
         listModel = new DefaultListModel<EMail>();
+        
         listModel.addElement(mailArray[0]);
         listModel.addElement(mailArray[1]);
         listModel.addElement(mailArray[2]);
@@ -136,7 +137,8 @@ public class InboxPanel extends JPanel{
         listModel.addElement(mailArray[0]);
         listModel.addElement(mailArray[1]);
         listModel.addElement(mailArray[2]);
-        InboxMailRenderer r = new InboxMailRenderer();
+        
+        ListCellRenderer<EMail> r = (ListCellRenderer<EMail>)new InboxMailRenderer();
         mailList.setCellRenderer(r);
         mailList.addMouseListener(new ListListener());
 
@@ -153,8 +155,14 @@ public class InboxPanel extends JPanel{
         //RICHIESTA DI UPDATE MAIL LIST AL SERVER
     }
     
-    public void setUser(User u){
-        user = u;
-        welcomeLabel.setText("Welcome back, " + user.getName());
+    public void setUserLabel(User u){
+        welcomeLabel.setText("Welcome back, " + u.getName());
+    }
+    
+    public void updateInboxList(ArrayList<EMail> mailList){
+        listModel.clear();
+        for(int i = 0; i < mailList.size(); i++){
+            listModel.addElement(mailList.get(i));
+        }   
     }
 }

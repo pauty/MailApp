@@ -4,11 +4,24 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailReaderPanel.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/connection/ConnectionManager.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/SendMailTask.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/InboxMailRenderer.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailServerImpl.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/view/MailAppServerView.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailFileHandler.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/GetInboxTask.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/User.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailAppClientView.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/EMail.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailServer.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/MailAppClient.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/InboxPanel.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/UserSelectionPanel.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/ServerMessage.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/connection/ConnectionManagerMessage.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailWriterPanel.java</file>
-            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/InboxMailRenderer.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailAppServer.java</file>
         </group>
     </open-files>
 </project-private>

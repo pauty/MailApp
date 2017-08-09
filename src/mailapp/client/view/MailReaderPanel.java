@@ -14,7 +14,6 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import mailapp.User;
-import mailapp.client.MailAppClient;
 
 public class MailReaderPanel extends javax.swing.JPanel {
         // Variables declaration - do not modify                     
@@ -45,13 +44,16 @@ public class MailReaderPanel extends javax.swing.JPanel {
         @Override
         public void actionPerformed(ActionEvent ae) {
             if(ae.getActionCommand().equals("Back")){
-                MailAppClient.getInstance().showInboxPanel();
+                MailAppClientView.getInstance().showInboxPanel();
             }
             else if(ae.getActionCommand().equals("Forward")){
-                MailAppClient.getInstance().showMailWriterPanel(readingMail, EMail.Type.FORWARD);
+                MailAppClientView.getInstance().showMailWriterPanel(readingMail, EMail.Type.FORWARD);
             }
             else if(ae.getActionCommand().equals("Reply")){
-                MailAppClient.getInstance().showMailWriterPanel(readingMail, EMail.Type.REPLY);
+                MailAppClientView.getInstance().showMailWriterPanel(readingMail, EMail.Type.REPLY);
+            }
+            else if(ae.getActionCommand().equals("Reply-All")){
+                MailAppClientView.getInstance().showMailWriterPanel(readingMail, EMail.Type.REPLY_ALL);
             }
         }
         
@@ -146,8 +148,6 @@ public class MailReaderPanel extends javax.swing.JPanel {
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.LINE_AXIS));
 
         messageTextArea.setEditable(false);
-        messageTextArea.setColumns(20); ////////////////////////
-        messageTextArea.setRows(5);
         messageScrollPane.setViewportView(messageTextArea);
 
         messagePanel.add(messageScrollPane);
@@ -162,16 +162,9 @@ public class MailReaderPanel extends javax.swing.JPanel {
         
         actualFromLabel.setText(mail.getSender().getName() + " <"+mail.getSender().getAddress()+">");
         
-        String toStr = "";
-        ArrayList<User> toUsers = mail.getReceivers();
-        for(int i = 0; i < toUsers.size(); i++){
-            toStr += toUsers.get(i).getName()+" <" +toUsers.get(i).getAddress() +">";
-            if(i < toUsers.size() -1)
-                toStr += ", ";
-        }
-        actualToLabel.setText(toStr);
+        actualToLabel.setText(User.printUserAddressesList(mail.getReceivers(), ", "));
         
-        actualDateLabel.setText(mail.getDateString());
+        actualDateLabel.setText(mail.getDateString("dd/MM/yyyy   HH:mm:ss"));
         
         messageTextArea.setText(mail.getBody());
     }

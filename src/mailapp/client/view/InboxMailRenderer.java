@@ -7,8 +7,6 @@ package mailapp.client.view;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import javax.swing.border.CompoundBorder;
 import mailapp.EMail;
 
@@ -16,7 +14,7 @@ import mailapp.EMail;
  *
  * @author pauty
  */
-public class InboxMailRenderer extends JPanel implements ListCellRenderer{
+public class InboxMailRenderer extends JPanel implements ListCellRenderer<EMail>{
     private JLabel senderNameLabel;
     private JLabel subjectLabel;
     private JLabel dateLabel;
@@ -39,15 +37,13 @@ public class InboxMailRenderer extends JPanel implements ListCellRenderer{
     }                      
                  
     @Override
-    public Component getListCellRendererComponent(JList list, Object o, int i, boolean isSelected, boolean cellHasFocus) {
-        
-        EMail mail = (EMail)o;
+    public Component getListCellRendererComponent(JList<? extends EMail> list, EMail mail, int i, boolean isSelected, boolean cellHasFocus) {
         
         senderNameLabel.setText(mail.getSender().getName());
         
         subjectLabel.setText(mail.getSubject());
         
-        dateLabel.setText(mail.getDateString());
+        dateLabel.setText(mail.getDateString("dd/MM/yyyy    HH:mm:ss"));
         
         if (isSelected) {
             setBackground(list.getSelectionBackground());

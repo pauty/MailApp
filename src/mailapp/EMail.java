@@ -1,6 +1,7 @@
 
 package mailapp;
 
+import java.io.Serializable;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,15 +11,15 @@ import java.util.Date;
  *
  * @author pauty
  */
-public class EMail {
+public class EMail implements Serializable{
     private int ID;
     private User sender;
     private ArrayList<User> receivers;
     private String subject;
-    private String body;
     private Date date;
     private int priority;
-    private int replyTo;
+    private int inReplyTo;
+    private String body;
     
     public enum Type{
         NEW,
@@ -27,7 +28,7 @@ public class EMail {
         REPLY_ALL
     }
     
-    public EMail(int id, User from, ArrayList<User> to, String subj, String b, Date d, int p){
+    public EMail(int id, User from, ArrayList<User> to, String subj, String b, Date d, int p, int replyID){
         ID = id;
         sender = from;
         receivers = new ArrayList<User>(to);
@@ -35,6 +36,7 @@ public class EMail {
         body = b;
         date = d;
         priority = p;
+        inReplyTo = replyID;
     }
     
     public void setID(int id){
@@ -69,9 +71,14 @@ public class EMail {
         return priority;
     }
     
-    public String getDateString(){
-        Format formatter = new SimpleDateFormat("dd/MM/yyyy   HH:mm:ss");
+    public String getDateString(String format){
+        // "dd/MM/yyyy   HH:mm:ss"
+        Format formatter = new SimpleDateFormat(format);
         return formatter.format(date);
+    }
+    
+    public int getInReplyTo(){
+        return inReplyTo;
     }
     
     
