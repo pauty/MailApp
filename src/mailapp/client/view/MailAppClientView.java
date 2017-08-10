@@ -7,7 +7,6 @@ import java.util.Observable;
 import java.util.Observer;
 import mailapp.EMail;
 import mailapp.client.connection.ConnectionManager;
-import mailapp.client.connection.ConnectionManagerMessage;
 
 /**
  *
@@ -27,19 +26,9 @@ public class MailAppClientView extends JFrame{
 
         @Override
         public void update(Observable o, Object o1) {
-            ConnectionManagerMessage msg = (ConnectionManagerMessage)o1;
-            
-            switch(msg.getType()){
-                case INBOX_RESPONSE:
-                    @SuppressWarnings("unchecked")
-                    ArrayList<EMail> list = (ArrayList<EMail>)msg.getContent();
-                    inboxPanel.updateInboxList(list);
-                    break;
-                
-            }
+            inboxPanel.updateInboxList(ConnectionManager.getInstance().getInboxMailList());  
         }  
     }
-    
     
     private MailAppClientView(){
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

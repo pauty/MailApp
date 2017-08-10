@@ -7,69 +7,69 @@ package mailapp.server.task;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
+import java.util.concurrent.locks.Lock;
 import mailapp.EMail;
 import mailapp.User;
+import mailapp.server.FileLocker;
 import mailapp.server.MailFileHandler;
+import mailapp.server.ServerMessage;
 
-public class GetInboxTask implements Callable<ArrayList<EMail>>{
+public class GetInboxTask implements Callable<ServerMessage>{
         User user;
-        public GetInboxTask(User u){
+        int lastPulledID;
+        public GetInboxTask(User u, int lastPulled){
             user = u;
+            lastPulledID = lastPulled;
         }
 
         @Override
-        public ArrayList<EMail> call() {
+        public ServerMessage call() {
             File file = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/inbox.txt");
-            RandomAccessFile in = null;
+            Scanner scan = null;
             ArrayList<EMail> list= new ArrayList<EMail>();
             int mailID;
             EMail mail;
             String toParse;
-            boolean finish = false;
+            int inboxSize = 0;
+            int newLastPulled = lastPulledID;
             try {
-                in = new RandomAccessFile(file, "rw");
-                FileLock lock = in.getChannel().lock();
+                scan = new Scanner(file);
+                Lock lock = FileLocker.getInstance().getLockForUser(user.getAddress());
+                lock.lock();
                 try {
-                    while (!finish) {
-                        toParse = in.readLine();
-                        if(toParse == null || toParse.isEmpty())
-                            break;
-                        try{
+                    while (scan.hasNextLine()) {
+                        toParse = scan.nextLine();
+                        try {
                             mailID = Integer.parseInt(toParse);
-                            mail = MailFileHandler.openMail(mailID);
-                            System.out.println("opened mail "+mailID);
-                            if(mail != null)
-                                list.add(0, mail);
+                            if(lastPulledID < 0 || mailID > lastPulledID){
+                                mail = MailFileHandler.openMail(mailID);
+                                System.out.println("opened mail "+mailID);
+                                if(mail != null)
+                                    list.add(0, mail);
+                                if(mailID > newLastPulled)
+                                    newLastPulled = mailID;
+                            }
+                            inboxSize++;
                         }
                         catch(NumberFormatException e){
-                            finish = true;
-                            System.out.println(toParse);
+                            System.out.println("Erroneous parse:" + toParse);
                         }
                     }
                 } 
                 finally {
-                    lock.release();
+                    lock.unlock();
                 }
             } 
             catch(FileNotFoundException e) {
                 e.printStackTrace();
             } 
-            catch(IOException e) {
-                e.printStackTrace();
-            }
             finally {
-                try {
-                    in.close();
-                } 
-                catch(IOException e) {
-                    e.printStackTrace();
-                }
+                if(scan != null)
+                    scan.close();
             }
-            return list;
+            return new ServerMessage(list, newLastPulled, inboxSize);
         }
     }

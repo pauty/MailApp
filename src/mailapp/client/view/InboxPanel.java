@@ -49,8 +49,9 @@ public class InboxPanel extends JPanel{
         
     }
     
-    private class ListListener extends MouseAdapter{
-        private int previousSelectedIndex = -2;
+    private int previousSelectedIndex = -2;
+    
+    private class ListListener extends MouseAdapter{  
         @Override
         public void mouseClicked(MouseEvent me) {
             if(me.isControlDown()){
@@ -151,8 +152,6 @@ public class InboxPanel extends JPanel{
         
         this.setBorder(new EmptyBorder(10,10,10,10));
         
-        
-        //RICHIESTA DI UPDATE MAIL LIST AL SERVER
     }
     
     public void setUserLabel(User u){
@@ -161,6 +160,7 @@ public class InboxPanel extends JPanel{
     
     public void updateInboxList(ArrayList<EMail> mailList){
         listModel.clear();
+        previousSelectedIndex = -2;
         for(int i = 0; i < mailList.size(); i++){
             listModel.addElement(mailList.get(i));
         }   

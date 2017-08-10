@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Date;
 import mailapp.EMail;
 import mailapp.User;
 import mailapp.client.connection.ConnectionManager;
@@ -46,7 +47,20 @@ public class MailWriterPanel extends JPanel {
                 }
             }
             else if(ae.getActionCommand().equals("Send")){
+                User sender = ConnectionManager.getInstance().getCurrentUser();
+                ArrayList<User> receivers = new ArrayList<User>();
+                String[] receiversStr = toField.getText().split(",");
+                for(int i = 0; i < receiversStr.length; i++){
+                    receivers.add(new User("",receiversStr[i].trim()));
+                }
+                String subject = subjectField.getText();
+                String body = messageTextArea.getText();
+                Date date = new Date();
+                int priority = 0;
                 
+                
+                EMail mail = new EMail(-99, sender, receivers, subject, body, date, priority, inReplyTo);
+                ConnectionManager.getInstance().sendMail(mail);
             }
         }
     

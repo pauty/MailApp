@@ -5,8 +5,10 @@
  */
 package mailapp.server;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DateFormat;
@@ -66,6 +68,8 @@ public class MailFileHandler {
         while(in.hasNextLine()){
             body += in.nextLine() + "\n";
         }
+        
+        in.close();
         EMail res = new EMail(mailID, sender, receivers, subject, body, date, priority, inReplyTo);
         
         return res;
@@ -75,7 +79,7 @@ public class MailFileHandler {
         File file = new File("mails/" + mail.getID() + ".txt");
         PrintWriter out = null;
         try {
-            out = new PrintWriter(file);
+            out = new PrintWriter(new BufferedWriter(new FileWriter(file, false)));
         } catch (IOException ex) {
             System.out.println("Error saving mail: " + mail.getID());
         }
@@ -92,17 +96,22 @@ public class MailFileHandler {
             out.println(receivers.get(receivers.size()-1).getName() + "#" + receivers.get(receivers.size()-1).getAddress());
             //subject 
             out.println(mail.getSubject());
+            System.out.println("saved subj " + mail.getSubject());
             //date
             out.println(mail.getDateString(FORMAT_STRING));
+            System.out.println("saved date "+mail.getDateString(FORMAT_STRING));
             //priority
             out.println(mail.getPriority());
             //inReplyTo
             out.println(mail.getInReplyTo());
             //body
             out.println(mail.getBody());
+            
+            out.flush();
+            out.close();
         }
         catch(Exception e){
-                
+            System.out.println("another Error saving mail: " + mail.getID());   
         }
         
     }

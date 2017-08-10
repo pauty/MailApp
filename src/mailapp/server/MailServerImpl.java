@@ -8,9 +8,12 @@ package mailapp.server;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Scanner;
 import java.util.concurrent.*;
 import mailapp.EMail;
@@ -27,6 +30,14 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
     private final int NUM_THREADS = 10;
     private Executor exec;
     private int nextMailID;
+    private LogUpdater logUpdater;
+    
+    private class LogUpdater extends Observable{
+        public void updateLog(String s){
+            this.setChanged();
+            this.notifyObservers(s);
+        }
+    }
     
     public MailServerImpl() throws RemoteException{
         super();
@@ -34,10 +45,13 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
         try {
             File file = new File("settings/mailID.txt");
             Scanner scan = new Scanner(file);
-            scan.nextInt();
+            nextMailID = scan.nextInt();
+            scan.close();
         } catch (FileNotFoundException ex) {
             System.out.println("error opening setting");
         }
+        logUpdater = new LogUpdater();
+        
     }
     
     @Override
@@ -55,18 +69,19 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
         }
         
         if(invalidReceivers.isEmpty()){
+            setMailID(mail);
             FutureTask<Boolean> ft = new FutureTask<>(new SendMailTask(mail));
             exec.execute(ft);
+            Boolean res = false;
             try {
-                Boolean res = ft.get();
+                res = ft.get();
             } catch (InterruptedException ex) { 
                 System.out.println("Interrupred exception in sendMail");
             } catch (ExecutionException ex) {
                  System.out.println("execution exception in sendMail");
                  ex.printStackTrace();
             }
-            setMailID(mail);
-            MailFileHandler.saveMail(mail);
+
             
             msg = new ServerMessage();
         }
@@ -84,11 +99,11 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
     }
 
     @Override
-    public ArrayList<EMail> getUserInbox(User user) throws RemoteException{
-        System.out.println("server is gettin user inbox");
-        FutureTask<ArrayList<EMail>> ft = new FutureTask<>(new GetInboxTask(user));
+    public ServerMessage getUserInbox(User user, int lastPulledID) throws RemoteException{
+        logUpdater.updateLog("server is gettin user inbox\n");
+        FutureTask<ServerMessage> ft = new FutureTask<>(new GetInboxTask(user, lastPulledID));
         exec.execute(ft);
-        ArrayList<EMail> res = null;
+        ServerMessage res = null;
         try {
             res = ft.get();
         } catch (InterruptedException ex) { 
@@ -97,17 +112,29 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
              System.out.println("execution exception in getUserInbox");
              ex.printStackTrace();
         }
-        System.out.println("server has finished");
+        logUpdater.updateLog("server has finished\n");
         return res;
+    }
+    
+    public void addLogObserver(Observer o){
+        logUpdater.addObserver(o);
     }
     
     private synchronized void setMailID(EMail mail){
         mail.setID(nextMailID);
         nextMailID++;
+        MailFileHandler.saveMail(mail);
     }
     
     public void destroy(){
-        
+        File file = new File("settings/mailID.txt");
+        try {
+            PrintWriter out = new PrintWriter(file);
+            out.println("" + nextMailID);
+            out.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("error not found");
+        }
     }
     
 }

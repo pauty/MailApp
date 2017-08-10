@@ -20,7 +20,8 @@ public class MailAppServer {
      */
     public static void main(String args[]) throws RemoteException {
 
-        new MailAppServerView().setVisible(true);
+        MailAppServerView view = new MailAppServerView();
+        view.setVisible(true);
         
         try { 
             //special exception handler for registry creation
@@ -32,7 +33,9 @@ public class MailAppServer {
             System.out.println("java RMI registry already exists.");
         }
         
-        MailServer server = new MailServerImpl();
+        MailServerImpl server = new MailServerImpl();
+        server.addLogObserver(view);
+        
         
         try {
             Naming.rebind("//127.0.0.1/MailServer", server);
