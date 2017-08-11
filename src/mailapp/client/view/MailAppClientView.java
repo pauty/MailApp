@@ -51,6 +51,7 @@ public class MailAppClientView extends JFrame{
         getContentPane().add(mailWriterPanel, "mailWriter");
 
         this.setSize(800, 500);
+        this.setMinimumSize(new Dimension(500,300));
         
         //adds a new observer to the connection manager
         ConnectionManager.getInstance().addObserver(new ConnectionManagerObserver());

@@ -29,7 +29,7 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
     
     private final int NUM_THREADS = 10;
     private Executor exec;
-    private int nextMailID;
+    private static int nextMailID;
     private LogUpdater logUpdater;
     
     private class LogUpdater extends Observable{
@@ -50,8 +50,7 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
         } catch (FileNotFoundException ex) {
             System.out.println("error opening setting");
         }
-        logUpdater = new LogUpdater();
-        
+        logUpdater = new LogUpdater();  
     }
     
     @Override
@@ -69,7 +68,10 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
         }
         
         if(invalidReceivers.isEmpty()){
+            
             setMailID(mail);
+            MailFileHandler.saveMail(mail);
+            
             FutureTask<Boolean> ft = new FutureTask<>(new SendMailTask(mail));
             exec.execute(ft);
             Boolean res = false;
@@ -81,8 +83,6 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
                  System.out.println("execution exception in sendMail");
                  ex.printStackTrace();
             }
-
-            
             msg = new ServerMessage();
         }
         else{
@@ -99,9 +99,9 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
     }
 
     @Override
-    public ServerMessage getUserInbox(User user, int lastPulledID) throws RemoteException{
+    public ServerMessage getUserInbox(User user, int lastPulledID, int inboxSize) throws RemoteException{
         logUpdater.updateLog("server is gettin user inbox\n");
-        FutureTask<ServerMessage> ft = new FutureTask<>(new GetInboxTask(user, lastPulledID));
+        FutureTask<ServerMessage> ft = new FutureTask<>(new GetInboxTask(user, lastPulledID, inboxSize));
         exec.execute(ft);
         ServerMessage res = null;
         try {
@@ -120,10 +120,9 @@ public class MailServerImpl extends UnicastRemoteObject implements MailServer{
         logUpdater.addObserver(o);
     }
     
-    private synchronized void setMailID(EMail mail){
+    private static synchronized void setMailID(EMail mail){
         mail.setID(nextMailID);
         nextMailID++;
-        MailFileHandler.saveMail(mail);
     }
     
     public void destroy(){

@@ -17,18 +17,20 @@ import mailapp.User;
 public class ServerMessage implements Serializable{
     private Type type;
     public enum Type{
-        SUCCESS,
+        UPDATE_INBOX_SUCCESS,
+        UPDATE_INBOX_ERROR,
         GENERIC_ERROR,
+        SEND_MAIL_SUCCESS,
         INVALID_USER_ERROR
     }
     ArrayList<User> invalidUserList = null;
     ArrayList<EMail> inboxList = null;
-    int inboxSize = -1;
+    int serverInboxSize = -1;
     int lastPulledID = -1;
     String errorMessage = null;
     
     public ServerMessage(){
-        type = Type.SUCCESS;
+        type = Type.UPDATE_INBOX_SUCCESS;
     }
     
     public ServerMessage(String errorMsg){
@@ -46,10 +48,10 @@ public class ServerMessage implements Serializable{
     }
         
     public ServerMessage(ArrayList<EMail> mailList, int lastPulled, int size){
-        type = Type.SUCCESS;
+        type = Type.UPDATE_INBOX_SUCCESS;
         inboxList = new ArrayList<EMail>(mailList);
         lastPulledID = lastPulled;
-        inboxSize = size;
+        serverInboxSize = size;
     }
 
     public ArrayList<User> getInvalidUserList() {
@@ -60,8 +62,8 @@ public class ServerMessage implements Serializable{
         return inboxList;
     }
     
-    public int getInboxSize(){
-        return inboxSize;
+    public int getServerInboxSize(){
+        return serverInboxSize;
     }
     
     public int getLastPulledID(){

@@ -81,10 +81,10 @@ public class MailReaderPanel extends javax.swing.JPanel {
         messageScrollPane = new JScrollPane();
         messageTextArea = new JTextArea();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new BorderLayout());
 
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        topPanel.setLayout(new java.awt.BorderLayout());
+        topPanel.setLayout(new BorderLayout());
 
         formalLabelsPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
         formalLabelsPanel.setLayout(new GridLayout(4, 1));
@@ -103,7 +103,7 @@ public class MailReaderPanel extends javax.swing.JPanel {
 
         topPanel.add(formalLabelsPanel, BorderLayout.WEST);
 
-        buttonsPanel.setLayout(new GridLayout());
+        //buttonsPanel.setLayout(new GridLayout());
 
         ButtonsListener buttonsListener = new ButtonsListener();
         
@@ -148,7 +148,12 @@ public class MailReaderPanel extends javax.swing.JPanel {
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.LINE_AXIS));
 
         messageTextArea.setEditable(false);
+        messageTextArea.setMargin(new Insets(20, 20, 20, 20));
+        messageTextArea.setLineWrap(true);
+        messageTextArea.setWrapStyleWord(true);
+        
         messageScrollPane.setViewportView(messageTextArea);
+
 
         messagePanel.add(messageScrollPane);
 
@@ -167,5 +172,7 @@ public class MailReaderPanel extends javax.swing.JPanel {
         actualDateLabel.setText(mail.getDateString("dd/MM/yyyy   HH:mm:ss"));
         
         messageTextArea.setText(mail.getBody());
+        
+        messageTextArea.setCaretPosition(0);
     }
 }

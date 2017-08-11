@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mailapp.EMail;
 import mailapp.User;
 import mailapp.server.FileLocker;
@@ -20,9 +22,11 @@ import mailapp.server.ServerMessage;
 public class GetInboxTask implements Callable<ServerMessage>{
         User user;
         int lastPulledID;
-        public GetInboxTask(User u, int lastPulled){
+        int clientInboxSize;
+        public GetInboxTask(User u, int lastPulled, int inboxSize){
             user = u;
             lastPulledID = lastPulled;
+            
         }
 
         @Override
@@ -35,28 +39,46 @@ public class GetInboxTask implements Callable<ServerMessage>{
             String toParse;
             int inboxSize = 0;
             int newLastPulled = lastPulledID;
+            boolean mustAdd = false;
+            System.out.println("I am sleepy");
+            try {
+                Thread.sleep(6000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(GetInboxTask.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            System.out.println("I woke up");
             try {
                 scan = new Scanner(file);
                 Lock lock = FileLocker.getInstance().getLockForUser(user.getAddress());
                 lock.lock();
                 try {
-                    while (scan.hasNextLine()) {
-                        toParse = scan.nextLine();
+                    while(scan.hasNextInt()) {
+                        //toParse = scan.nextLine();
                         try {
-                            mailID = Integer.parseInt(toParse);
-                            if(lastPulledID < 0 || mailID > lastPulledID){
+                            mailID = scan.nextInt();//Integer.parseInt(toParse);
+                            if(lastPulledID < 0 || mustAdd){
                                 mail = MailFileHandler.openMail(mailID);
                                 System.out.println("opened mail "+mailID);
                                 if(mail != null)
                                     list.add(0, mail);
-                                if(mailID > newLastPulled)
-                                    newLastPulled = mailID;
+                                newLastPulled = mailID;
+                            }
+                            if(mailID == lastPulledID){
+                                //last pulled ID found; every
+                                // next mail must be pulled
+                                mustAdd = true;
                             }
                             inboxSize++;
                         }
                         catch(NumberFormatException e){
-                            System.out.println("Erroneous parse:" + toParse);
+                            System.out.println("Erroneous parse:");
                         }
+                    }
+                    if(lastPulledID >= 0 && mustAdd == false){
+                        //mi aspettavo di trovare almeno l'id
+                        //pullato in precedenza, ma non l'ho incontrato:
+                        //un altro client ha fatto delete, setta inboxSize a -1 per forzare update
+                        inboxSize = -1;
                     }
                 } 
                 finally {

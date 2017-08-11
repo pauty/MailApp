@@ -20,6 +20,6 @@ public interface MailServer extends Remote{
     
     public ServerMessage deleteMail(User user, ArrayList<Integer> toDelete) throws RemoteException;
     
-    public ServerMessage getUserInbox(User user, int lastPulledID) throws RemoteException;
+    public ServerMessage getUserInbox(User user, int lastPulledID, int inboxSize) throws RemoteException;
    
 }

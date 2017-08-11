@@ -47,23 +47,20 @@ public class MailWriterPanel extends JPanel {
                 }
             }
             else if(ae.getActionCommand().equals("Send")){
-                User sender = ConnectionManager.getInstance().getCurrentUser();
-                ArrayList<User> receivers = new ArrayList<User>();
-                String[] receiversStr = toField.getText().split(",");
-                for(int i = 0; i < receiversStr.length; i++){
-                    receivers.add(new User("",receiversStr[i].trim()));
-                }
                 String subject = subjectField.getText();
-                String body = messageTextArea.getText();
-                Date date = new Date();
-                int priority = 0;
-                
-                
-                EMail mail = new EMail(-99, sender, receivers, subject, body, date, priority, inReplyTo);
-                ConnectionManager.getInstance().sendMail(mail);
+                String to = toField.getText();
+                if(subject.isEmpty() || to.isEmpty()){
+                    JOptionPane.showMessageDialog( new JDialog(),
+                        "Please fill both subject and\nto fields.",
+                        "Invalid Field",
+                        JOptionPane.ERROR_MESSAGE);
+                } 
+                else{ 
+                    String body = messageTextArea.getText();
+                    ConnectionManager.getInstance().sendMail(to, subject, body, inReplyTo);
+                }
             }
         }
-    
     }
     
     public MailWriterPanel(){
@@ -126,6 +123,10 @@ public class MailWriterPanel extends JPanel {
 
         messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.LINE_AXIS));
+        
+        messageTextArea.setMargin(new Insets(20, 20, 20, 20));
+        messageTextArea.setLineWrap(true);
+        messageTextArea.setWrapStyleWord(true);
 
         messageScrollPane.setViewportView(messageTextArea);
 
@@ -139,6 +140,7 @@ public class MailWriterPanel extends JPanel {
         subjectField.setText("");
         toField.setText("");
         messageTextArea.setText("");
+        messageTextArea.setCaretPosition(0);
         inReplyTo = -1;
         
         switch(t){
@@ -182,6 +184,5 @@ public class MailWriterPanel extends JPanel {
                 messageTextArea.append(mail.getBody());
                 break;   
         }
-    }
-                 
+    }            
 }
