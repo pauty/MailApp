@@ -9,8 +9,10 @@
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/SendMailTask.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/InboxMailRenderer.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailServerImpl.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/view/MailAppServerView.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailFileHandler.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/GetInboxTask.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/DeleteMailTask.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/User.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailAppClientView.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/EMail.java</file>

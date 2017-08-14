@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import javax.swing.border.EmptyBorder;
 import mailapp.EMail;
 import mailapp.User;
+import mailapp.client.connection.ConnectionManager;
     
 /**
  *
@@ -39,8 +40,15 @@ public class InboxPanel extends JPanel{
                 MailAppClientView.getInstance().showMailWriterPanel(null, EMail.Type.NEW);
             }
             else if(ae.getActionCommand().equals("Delete")){
+                int[] indices = mailList.getSelectedIndices();
+                ArrayList<EMail> mails = new ArrayList<EMail>();
+                for(int i = 0; i < indices.length; i++){
+                    mails.add(listModel.get(indices[i]));
+                }
+                ConnectionManager.getInstance().deleteMail(mails);
             }
             else if(ae.getActionCommand().equals("Logout")){
+
             }
             else{
                 //SOULD NOT BE HERE
@@ -50,7 +58,7 @@ public class InboxPanel extends JPanel{
     
     private int previousSelectedIndex = -2;
     
-    private class ListListener extends MouseAdapter{  
+    private class ListMouseListener extends MouseAdapter{  
         @Override
         public void mouseClicked(MouseEvent me) {
             if(me.isControlDown()){
@@ -58,7 +66,7 @@ public class InboxPanel extends JPanel{
                 return;
             }  
             int index = mailList.locationToIndex(me.getPoint());
-            if(index == previousSelectedIndex){
+            if(mailList.getCellBounds(index, index).contains(me.getPoint()) && index == previousSelectedIndex){
                 MailAppClientView.getInstance().showMailReaderPanel(listModel.get(index));
             }
             else{
@@ -82,10 +90,10 @@ public class InboxPanel extends JPanel{
         
         welcomeLabel.setAlignmentX(CENTER_ALIGNMENT);
         logoutButton.setAlignmentX(CENTER_ALIGNMENT);
-        leftPanel.setMaximumSize(new Dimension(100, 2000000));
+        welcomeLabel.setMaximumSize(new Dimension(200, 20));
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
         leftPanel.add(welcomeLabel);
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 40)));
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 50)));
         leftPanel.add(logoutButton);
 
         add(leftPanel, BorderLayout.LINE_START);
@@ -105,7 +113,7 @@ public class InboxPanel extends JPanel{
   
         ListCellRenderer<EMail> r = (ListCellRenderer<EMail>)new InboxMailRenderer();
         mailList.setCellRenderer(r);
-        mailList.addMouseListener(new ListListener());
+        mailList.addMouseListener(new ListMouseListener());
 
         mailList.setModel(listModel);
         jScrollPane1.setViewportView(mailList);
@@ -122,11 +130,20 @@ public class InboxPanel extends JPanel{
     }
     
     public void updateInboxList(ArrayList<EMail> mailList){
-        listModel.clear();
         previousSelectedIndex = -2;
-
+        ArrayList<EMail> toDelete = new ArrayList<EMail>();
+        //remove mails no longer present in remote inbox (delete)
+        for(int i = 0; i < listModel.size(); i++){
+            if(!mailList.contains(listModel.get(i)))
+                toDelete.add(listModel.get(i));
+        }
+        for(int i = 0; i < toDelete.size(); i++){
+            listModel.removeElement(toDelete.get(i));
+        }
+        //add new mails not yet listed in local inbox (update)
         for(int i = 0; i < mailList.size(); i++){
-            listModel.addElement(mailList.get(i));
+            if(!listModel.contains(mailList.get(i)))
+                listModel.insertElementAt(mailList.get(i), i);
         }   
     }
 }

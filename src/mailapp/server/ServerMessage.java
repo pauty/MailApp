@@ -8,7 +8,7 @@ package mailapp.server;
 import java.io.Serializable;
 import java.util.ArrayList;
 import mailapp.EMail;
-import mailapp.User;
+
 
 /**
  *
@@ -19,28 +19,24 @@ public class ServerMessage implements Serializable{
     public enum Type{
         UPDATE_INBOX_SUCCESS,
         UPDATE_INBOX_ERROR,
-        GENERIC_ERROR,
+        DELETE_SUCCESS,
+        DELETE_ERROR,
         SEND_MAIL_SUCCESS,
-        INVALID_USER_ERROR
+        INVALID_USER_ERROR,
+        GENERIC_ERROR,
     }
-    ArrayList<User> invalidUserList = null;
     ArrayList<EMail> inboxList = null;
     int serverInboxSize = -1;
     int lastPulledID = -1;
     String errorMessage = null;
     
-    public ServerMessage(){
-        type = Type.UPDATE_INBOX_SUCCESS;
+    public ServerMessage(Type t){
+        type = t;
     }
     
     public ServerMessage(String errorMsg){
         type = Type.GENERIC_ERROR; 
         errorMessage = errorMsg;
-    }
-    
-    public ServerMessage(ArrayList<User> userList){
-        type = Type.INVALID_USER_ERROR;
-        invalidUserList = new ArrayList<User>(userList);
     }
     
     public Type getType() {
@@ -52,10 +48,6 @@ public class ServerMessage implements Serializable{
         inboxList = new ArrayList<EMail>(mailList);
         lastPulledID = lastPulled;
         serverInboxSize = size;
-    }
-
-    public ArrayList<User> getInvalidUserList() {
-        return invalidUserList;
     }
     
     public ArrayList<EMail> getInboxList(){

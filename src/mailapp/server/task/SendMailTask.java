@@ -8,15 +8,12 @@ package mailapp.server.task;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mailapp.EMail;
 import mailapp.User;
 import mailapp.server.FileLocker;
@@ -50,7 +47,7 @@ public class SendMailTask implements Callable<Boolean>{
                     if(lock != null)
                         lock.unlock();
                     if(out != null)
-                    out.close();
+                        out.close();
                 }
             }
             return true;

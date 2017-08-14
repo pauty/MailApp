@@ -6,14 +6,15 @@
 package mailapp.client.connection;
 
 import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Observable;
-import javax.naming.*;
 import mailapp.EMail;
 import mailapp.User;
-import mailapp.server.MailServer;
 import mailapp.server.ServerMessage;
+import mailapp.server.MailServer;
 
 /**
  *
@@ -26,16 +27,20 @@ public class ConnectionManager extends Observable{
     private User currentUser = null;
     private int pullInterval = DEFAULT_PULL_INTERVAL ;
     private ArrayList<EMail> inboxMailList = new ArrayList<EMail>();
-    Context namingContext = null;
     private MailServer mailServer = null;
     private int lastPulledID = -1;
     
+    private Registry registry;
+    
     private ConnectionManager(){
         try{
-            namingContext = new InitialContext();
+            registry = LocateRegistry.getRegistry("127.0.0.1", 6667);
+            mailServer = (MailServer) (registry.lookup("MailServer"));
+            /*
             mailServer = (MailServer)Naming.lookup("//127.0.0.1/MailServer");
+            */
         }
-        catch(Exception e){
+        catch(NotBoundException | RemoteException e){
             System.out.println("Problema: " + e.getMessage());
         }
     }
@@ -51,15 +56,25 @@ public class ConnectionManager extends Observable{
     }
     
     private class MailPullLoop implements Runnable{
-        private boolean isRunning = true;
+        private volatile boolean isRunning = true;
+        private final Object lockObj = new Object();
         @Override
         public void run() {
             while(isRunning){
                 updateCurrentUserInbox();
-                try {
-                    Thread.sleep(pullInterval);
-                } catch (InterruptedException ex) {
+                synchronized (lockObj) {
+                    try{
+                        lockObj.wait(pullInterval);
+                    } catch(InterruptedException e){
+                        //Handle Exception
+                    }
                 }
+            }
+        }
+        
+        public void wakeup() {
+            synchronized (lockObj) {
+                lockObj.notify();
             }
         }
         
@@ -115,7 +130,7 @@ public class ConnectionManager extends Observable{
     }
    
     
-    public void sendMail(String to, String subject, String body, int inReplyTo){
+    public boolean sendMail(String to, String subject, String body, int inReplyTo){
         if(mailServer != null){
             
             //sender
@@ -142,10 +157,29 @@ public class ConnectionManager extends Observable{
                 System.out.println("Error sending mail !!!");
             }
         }
+        return true;
     }
     
-    public void deleteMail(ArrayList<Integer> mailIDs){
-        
+    public void deleteMail(ArrayList<EMail> mails){
+        ServerMessage msg = null;
+        ArrayList<Integer> ids = new ArrayList<Integer>();
+        for(int i = 0; i< mails.size(); i++){
+            ids.add(mails.get(i).getID());
+        }
+        try {
+            synchronized(this){
+                msg = mailServer.deleteMail(currentUser, ids);
+            }
+        } catch (RemoteException ex) {
+            System.out.println("Error deleting mail !!!");
+        }
+        if(msg != null && msg.getType() == ServerMessage.Type.DELETE_SUCCESS){
+            for(int i = 0; i< mails.size(); i++){
+                inboxMailList.remove(mails.get(i));
+            }
+            setChanged();
+            notifyObservers();
+        } 
     }
     
     public void setCurrentUser(User u){

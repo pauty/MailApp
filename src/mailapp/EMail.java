@@ -81,5 +81,13 @@ public class EMail implements Serializable{
         return inReplyTo;
     }
     
+    @Override
+    public boolean equals(Object o){
+        if(!(o instanceof EMail))
+            return false;
+        EMail mail = (EMail)o;
+        return (this.ID == mail.getID());
+    }
+    
     
 }

@@ -143,6 +143,8 @@ public class MailWriterPanel extends JPanel {
         messageTextArea.setCaretPosition(0);
         inReplyTo = -1;
         
+        String[] bodyLines;
+        
         switch(t){
             case NEW:
                 //nothing to do
@@ -157,7 +159,11 @@ public class MailWriterPanel extends JPanel {
                 messageTextArea.append("From: " + mail.getSender().getAddress() + "\n");
                 messageTextArea.append("To: " + User.printUserAddressesList(mail.getReceivers(), ", ") + "\n");
                 messageTextArea.append("Date: " + mail.getDateString("dd/MM/yyyy   HH:mm:ss") + "\n");
-                messageTextArea.append("\n" + mail.getBody());
+                bodyLines = mail.getBody().split("\n");
+                for(int i = 0; i < bodyLines.length; i++){
+                    messageTextArea.append("|   " + bodyLines[i] + "\n");
+                }
+                //messageTextArea.append("\n" + mail.getBody());
                 break;
             case REPLY:
             case REPLY_ALL:
@@ -170,18 +176,19 @@ public class MailWriterPanel extends JPanel {
                     subjectField.setText(mail.getSubject());
                 }
                 //set to
-                if(t == EMail.Type.REPLY){
-                    toField.setText(mail.getSender().getAddress());
-                }
-                else{
+                toField.setText(mail.getSender().getAddress());
+                if(t == EMail.Type.REPLY_ALL){
                     ArrayList<User> userList= new ArrayList<User>(mail.getReceivers());
                     userList.remove(ConnectionManager.getInstance().getCurrentUser());
-                    toField.setText(User.printUserAddressesList(userList, ", "));
+                    toField.setText(toField.getText() + ", " + User.printUserAddressesList(userList, ", "));
                 }
                 //show previous message
                 messageTextArea.setText("\n\n----------------------------------------------------------------\n\n");
                 messageTextArea.append("in date " + mail.getDateString("dd/MM/yyyy HH:mm:ss") +" "+mail.getSender().getAddress()+" wrote:\n\n");
-                messageTextArea.append(mail.getBody());
+                bodyLines = mail.getBody().split("\n");
+                for(int i = 0; i < bodyLines.length; i++){
+                    messageTextArea.append("|   " + bodyLines[i] + "\n");
+                }
                 break;   
         }
     }            

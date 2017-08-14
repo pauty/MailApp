@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mailapp.EMail;
 import mailapp.User;
 import mailapp.server.FileLocker;
@@ -36,17 +34,9 @@ public class GetInboxTask implements Callable<ServerMessage>{
             ArrayList<EMail> list= new ArrayList<EMail>();
             int mailID;
             EMail mail;
-            String toParse;
             int inboxSize = 0;
             int newLastPulled = lastPulledID;
             boolean mustAdd = false;
-            System.out.println("I am sleepy");
-            try {
-                Thread.sleep(6000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(GetInboxTask.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            System.out.println("I woke up");
             try {
                 scan = new Scanner(file);
                 Lock lock = FileLocker.getInstance().getLockForUser(user.getAddress());

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.util.Observer;
+import mailapp.server.MailServerImpl;
 
 /**
  *
@@ -15,6 +16,7 @@ public class MailAppServerView extends JFrame implements Observer{
     private JButton exitButton;
     private JScrollPane logScrollPane;
     private JTextArea logTextArea;
+    private MailServerImpl server = null;
 
     @Override
     public void update(Observable o, Object o1) {
@@ -26,6 +28,9 @@ public class MailAppServerView extends JFrame implements Observer{
 
         @Override
         public void actionPerformed(ActionEvent ae) {
+            if(server != null)
+                server.shutdown();
+            dispose();
         }
     
     }
@@ -35,7 +40,7 @@ public class MailAppServerView extends JFrame implements Observer{
         logTextArea = new JTextArea("server set up-------------\n\n\n");
         exitButton = new JButton("Exit");
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
         logTextArea.setEditable(false);
         logTextArea.setFont(new Font("Noto Sans", 0, 14)); 
@@ -49,6 +54,10 @@ public class MailAppServerView extends JFrame implements Observer{
 
         this.setSize(700,400);
         
+    }
+    
+    public void setServer(MailServerImpl s){
+        server = s;
     }
                  
 }
