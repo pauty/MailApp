@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import mailapp.User;
 
 public class MailReaderPanel extends javax.swing.JPanel {
-        // Variables declaration - do not modify                     
+                   
     private JLabel actualDateLabel;
     private JLabel actualFromLabel;
     private JPanel actualLabelsPanel;
@@ -38,29 +38,37 @@ public class MailReaderPanel extends javax.swing.JPanel {
     private JPanel topPanel;
     
     private EMail readingMail; 
+    private MailAppClientView parentFrame;
+    
+    //CONTROLLER
     
     private class ButtonsListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent ae) {
             if(ae.getActionCommand().equals("Back")){
-                MailAppClientView.getInstance().showInboxPanel();
+                parentFrame.showInboxPanel();
             }
             else if(ae.getActionCommand().equals("Forward")){
-                MailAppClientView.getInstance().showMailWriterPanel(readingMail, EMail.Type.FORWARD);
+                parentFrame.showMailWriterPanel(readingMail, EMail.Type.FORWARD);
             }
             else if(ae.getActionCommand().equals("Reply")){
-                MailAppClientView.getInstance().showMailWriterPanel(readingMail, EMail.Type.REPLY);
+                parentFrame.showMailWriterPanel(readingMail, EMail.Type.REPLY);
             }
             else if(ae.getActionCommand().equals("Reply-All")){
-                MailAppClientView.getInstance().showMailWriterPanel(readingMail, EMail.Type.REPLY_ALL);
+                parentFrame.showMailWriterPanel(readingMail, EMail.Type.REPLY_ALL);
             }
         }
         
     }
+    
+    //END CONTROLLER
 
-    public MailReaderPanel() {
+    public MailReaderPanel(MailAppClientView parent) {
+        //set parent
+        parentFrame = parent;
         
+        //init GUI
         topPanel = new JPanel();
         formalLabelsPanel = new JPanel();
         subjectLabel = new JLabel("Subject");
@@ -102,8 +110,6 @@ public class MailReaderPanel extends javax.swing.JPanel {
         formalLabelsPanel.add(dateLabel);
 
         topPanel.add(formalLabelsPanel, BorderLayout.WEST);
-
-        //buttonsPanel.setLayout(new GridLayout());
 
         ButtonsListener buttonsListener = new ButtonsListener();
         
@@ -153,7 +159,6 @@ public class MailReaderPanel extends javax.swing.JPanel {
         messageTextArea.setWrapStyleWord(true);
         
         messageScrollPane.setViewportView(messageTextArea);
-
 
         messagePanel.add(messageScrollPane);
 

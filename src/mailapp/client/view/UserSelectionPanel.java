@@ -17,17 +17,20 @@ import mailapp.client.connection.ConnectionManager;
  * @author pauty
  */
 public class UserSelectionPanel extends JPanel{
-        
+    //hard coded users    
     private final String USERNAME1 = "Alan Turing";
     private final String USERNAME2 = "John Von Neumann";
     private final String USERNAME3 = "Dijkstra";
     private final String USERADDRESS1 = "turing@mailapp.com";
     private final String USERADDRESS2 = "vonneumann@mailapp.com";
     private final String USERADDRESS3 = "dijkstra@mailapp.com";
-    private JLabel jLabel1;
     
+    private JLabel jLabel1;
     private JComboBox<String> userComboBox;
     private JButton loginButton;
+    private MailAppClientView parentFrame;
+    
+    //CONTROLLER 
     
     private class loginButtonListener implements ActionListener{
         @Override
@@ -48,13 +51,19 @@ public class UserSelectionPanel extends JPanel{
             
             //change te current user
             user = new User(userName, userAddress);
-            ConnectionManager.getInstance().setCurrentUser(user);
+            parentFrame.getConnectionManager().setCurrentUser(user);
             //make the view show show inbox panel
-            MailAppClientView.getInstance().showInboxPanel();
+            parentFrame.showInboxPanel();
         }
     }  
     
-    public UserSelectionPanel(){
+    //END CONTROLLER
+    
+    public UserSelectionPanel(MailAppClientView parent){
+        //set parent
+        parentFrame = parent;
+        
+        //init GUI
         jLabel1 = new javax.swing.JLabel();
         userComboBox = new JComboBox<String>();
         loginButton = new JButton();

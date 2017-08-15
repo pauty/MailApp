@@ -6,7 +6,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Date;
 import mailapp.EMail;
 import mailapp.User;
 import mailapp.client.connection.ConnectionManager;
@@ -25,8 +24,11 @@ public class MailWriterPanel extends JPanel {
     private JTextField toField;
     private JLabel toLabel;
     private JPanel topPanel;
+    private MailAppClientView parentFrame;
     
     private int inReplyTo;
+   
+    //CONTROLLER
     
     private class ButtonsListener implements ActionListener{
 
@@ -43,7 +45,7 @@ public class MailWriterPanel extends JPanel {
                     options,  //the titles of buttons
                     options[0]); //default button title
                 if(res == JOptionPane.YES_OPTION){
-                    MailAppClientView.getInstance().showInboxPanel();
+                   parentFrame.showInboxPanel();
                 }
             }
             else if(ae.getActionCommand().equals("Send")){
@@ -57,14 +59,20 @@ public class MailWriterPanel extends JPanel {
                 } 
                 else{ 
                     String body = messageTextArea.getText();
-                    ConnectionManager.getInstance().sendMail(to, subject, body, inReplyTo);
+                    parentFrame.getConnectionManager().sendMail(to, subject, body, inReplyTo);
+                    parentFrame.showInboxPanel();
                 }
             }
         }
     }
     
-    public MailWriterPanel(){
+    //END CONTROLLER
+    
+    public MailWriterPanel(MailAppClientView parent){
+        //set parent
+        parentFrame = parent;
         
+        //init GUI
         topPanel = new JPanel();
         formalLabelPanel = new JPanel();
         subjectLabel = new JLabel("Subject");
@@ -179,7 +187,7 @@ public class MailWriterPanel extends JPanel {
                 toField.setText(mail.getSender().getAddress());
                 if(t == EMail.Type.REPLY_ALL){
                     ArrayList<User> userList= new ArrayList<User>(mail.getReceivers());
-                    userList.remove(ConnectionManager.getInstance().getCurrentUser());
+                    userList.remove(parentFrame.getConnectionManager().getCurrentUser());
                     toField.setText(toField.getText() + ", " + User.printUserAddressesList(userList, ", "));
                 }
                 //show previous message

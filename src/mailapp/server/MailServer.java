@@ -6,7 +6,7 @@
 package mailapp.server;
 
 import java.rmi.*;
-import java.util.ArrayList;
+import java.util.List;
 import mailapp.EMail;
 import mailapp.User;
 
@@ -18,8 +18,8 @@ public interface MailServer extends Remote{
     
     public ServerMessage sendMail(EMail mail) throws RemoteException;
     
-    public ServerMessage deleteMail(User user, ArrayList<Integer> toDelete) throws RemoteException;
+    public ServerMessage deleteMails(User user, String folderName, List<Integer> toDelete) throws RemoteException;
     
-    public ServerMessage getUserInbox(User user, int lastPulledID, int inboxSize) throws RemoteException;
+    public ServerMessage getFolderMails(User user, String folderName, List<Integer> pulled) throws RemoteException;
    
 }

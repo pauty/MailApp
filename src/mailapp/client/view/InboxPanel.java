@@ -4,18 +4,19 @@
  * and open the template in the editor.
  */
 package mailapp.client.view;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.border.EmptyBorder;
 import mailapp.EMail;
-import mailapp.User;
-import mailapp.client.connection.ConnectionManager;
-    
+import mailapp.User;    
 /**
  *
  * @author pauty
@@ -31,13 +32,16 @@ public class InboxPanel extends JPanel{
     private JPanel rightPanel;
     private JPanel buttonsPanel;
     private JScrollPane jScrollPane1;
+    MailAppClientView parentFrame;
+    
+    //CONTROLLER
     
     private class ButtonsListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent ae) {
             if(ae.getActionCommand().equals("New Mail")){
-                MailAppClientView.getInstance().showMailWriterPanel(null, EMail.Type.NEW);
+                parentFrame.showMailWriterPanel(null, EMail.Type.NEW);
             }
             else if(ae.getActionCommand().equals("Delete")){
                 int[] indices = mailList.getSelectedIndices();
@@ -45,19 +49,16 @@ public class InboxPanel extends JPanel{
                 for(int i = 0; i < indices.length; i++){
                     mails.add(listModel.get(indices[i]));
                 }
-                ConnectionManager.getInstance().deleteMail(mails);
+                parentFrame.getConnectionManager().deleteMail(mails);
             }
             else if(ae.getActionCommand().equals("Logout")){
 
-            }
-            else{
-                //SOULD NOT BE HERE
             }
         }      
     }
     
     private int previousSelectedIndex = -2;
-    
+
     private class ListMouseListener extends MouseAdapter{  
         @Override
         public void mouseClicked(MouseEvent me) {
@@ -67,7 +68,7 @@ public class InboxPanel extends JPanel{
             }  
             int index = mailList.locationToIndex(me.getPoint());
             if(mailList.getCellBounds(index, index).contains(me.getPoint()) && index == previousSelectedIndex){
-                MailAppClientView.getInstance().showMailReaderPanel(listModel.get(index));
+                parentFrame.showMailReaderPanel(listModel.get(index));
             }
             else{
                 previousSelectedIndex = index;
@@ -75,7 +76,13 @@ public class InboxPanel extends JPanel{
         }
     }
     
-    public InboxPanel(){
+    //END CONTROLLER
+    
+    public InboxPanel(MailAppClientView parent){
+        //set parent frame
+        parentFrame = parent;
+        
+        //init GUI
         leftPanel = new JPanel();
         welcomeLabel = new JLabel();
         rightPanel = new JPanel();
@@ -129,7 +136,7 @@ public class InboxPanel extends JPanel{
         welcomeLabel.setText("Welcome back, " + u.getName());
     }
     
-    public void updateInboxList(ArrayList<EMail> mailList){
+    public void updateInboxList(List<EMail> mailList){
         previousSelectedIndex = -2;
         ArrayList<EMail> toDelete = new ArrayList<EMail>();
         //remove mails no longer present in remote inbox (delete)

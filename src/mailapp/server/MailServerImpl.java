@@ -5,38 +5,38 @@
  */
 package mailapp.server;
 
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mailapp.EMail;
 import mailapp.User;
-import mailapp.server.task.DeleteMailTask;
-import mailapp.server.task.GetInboxTask;
+import mailapp.server.task.DeleteMailsTask;
+import mailapp.server.task.GetFolderMailsTask;
 import mailapp.server.task.SendMailTask;
 
 /**
  *
  * @author pauty
  */
-public class MailServerImpl  /*extends UnicastRemoteObject*/ implements MailServer{
+public class MailServerImpl implements MailServer{
     
     private final int NUM_THREADS = 10;
     private ExecutorService exec;
     private static int nextMailID;
     private LogUpdater logUpdater;
-    private boolean isServerUp;
     private Registry registry;
     
     private class LogUpdater extends Observable{
@@ -58,11 +58,9 @@ public class MailServerImpl  /*extends UnicastRemoteObject*/ implements MailServ
             System.out.println("error opening setting");
         }
         logUpdater = new LogUpdater();  
-        isServerUp = true;
     }
     
-    public void start(){
-                
+    public void start(){           
         try {
             MailServer stub = (MailServer) UnicastRemoteObject.exportObject(this, 6667);
             registry = LocateRegistry.createRegistry(6667);
@@ -73,9 +71,9 @@ public class MailServerImpl  /*extends UnicastRemoteObject*/ implements MailServ
     }
     
     @Override
-    public ServerMessage getUserInbox(User user, int lastPulledID, int inboxSize){
+    public ServerMessage getFolderMails(User user, String folderName, List<Integer> pulled){
         //logUpdater.updateLog("server is gettin user inbox\n");
-        FutureTask<ServerMessage> ft = new FutureTask<>(new GetInboxTask(user, lastPulledID, inboxSize));
+        FutureTask<ServerMessage> ft = new FutureTask<>(new GetFolderMailsTask(user, folderName, pulled));
         exec.execute(ft);
         ServerMessage res = null;
         try {
@@ -131,10 +129,10 @@ public class MailServerImpl  /*extends UnicastRemoteObject*/ implements MailServ
     }
     
     @Override
-    public ServerMessage deleteMail(User user, ArrayList<Integer> toDelete){
+    public ServerMessage deleteMails(User user, String folderName, List<Integer> toDelete){
         ServerMessage msg = null;
         
-        FutureTask<Boolean> ft = new FutureTask<>(new DeleteMailTask(user, toDelete));
+        FutureTask<Boolean> ft = new FutureTask<>(new DeleteMailsTask(user, folderName, toDelete));
         exec.execute(ft);
         Boolean res = false;
         try {
@@ -167,7 +165,34 @@ public class MailServerImpl  /*extends UnicastRemoteObject*/ implements MailServ
     
     public void shutdown(){
         boolean success = false;
+        
+        //close the connection    
+        try {
+            registry.unbind("MailServer");
+            UnicastRemoteObject.unexportObject(this, true);
+            UnicastRemoteObject.unexportObject(registry, true);
+            
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
+        } catch (NotBoundException ex) {
+            ex.printStackTrace();
+        }   
+        
+        try {
+            Thread.sleep(2000); //wait for tasks to complete
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        
+        //do not accept new task requests
         exec.shutdown();
+        try {
+            exec.awaitTermination(2000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace(); 
+        }
+        
+        //save the current mail ID
         File file = new File("settings/mailID.txt");
         try {
             PrintWriter out = new PrintWriter(file);
@@ -177,16 +202,7 @@ public class MailServerImpl  /*extends UnicastRemoteObject*/ implements MailServ
         } catch (FileNotFoundException ex) {
             System.out.println("error not found");
         }
-        
-        try {
-            registry.unbind("MailServer");
-            UnicastRemoteObject.unexportObject(this, true);
-            
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-        } catch (NotBoundException ex) {
-            ex.printStackTrace();
-        }   
+ 
         System.out.println("shut down");
         
     }

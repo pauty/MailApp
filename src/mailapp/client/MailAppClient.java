@@ -16,10 +16,10 @@ public class MailAppClient {
         public static void main(String[] args) {
         
         //creates and start connection manager
-        ConnectionManager.getInstance(); //init
-        ConnectionManager.getInstance().connect();
-        
+        ConnectionManager connectionManager = new ConnectionManager();
+        connectionManager.connect();
         //creates GUI
-        MailAppClientView.getInstance().setVisible(true);
+        MailAppClientView view = new MailAppClientView(connectionManager);
+        view.setVisible(true);
     }
 }

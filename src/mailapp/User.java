@@ -3,6 +3,7 @@ package mailapp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -35,7 +36,7 @@ public class User implements Serializable{
     }
     
     //Utility
-    public static String printUserNamesList(ArrayList<User> list, String separator){
+    public static String printUserNamesList(List<User> list, String separator){
         String res = "";
         for(int i = 0; i < list.size() - 1; i++){
             res += list.get(i).getName() + separator;
@@ -44,7 +45,7 @@ public class User implements Serializable{
         return res;
     }
     
-    public static String printUserAddressesList(ArrayList<User> list, String separator){
+    public static String printUserAddressesList(List<User> list, String separator){
         String res = "";
         for(int i = 0; i < list.size() - 1; i++){
             res += list.get(i).getAddress() + separator;

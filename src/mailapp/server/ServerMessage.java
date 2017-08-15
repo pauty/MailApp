@@ -5,6 +5,7 @@
  */
 package mailapp.server;
 
+import java.util.List;
 import java.io.Serializable;
 import java.util.ArrayList;
 import mailapp.EMail;
@@ -25,9 +26,8 @@ public class ServerMessage implements Serializable{
         INVALID_USER_ERROR,
         GENERIC_ERROR,
     }
-    ArrayList<EMail> inboxList = null;
-    int serverInboxSize = -1;
-    int lastPulledID = -1;
+    List<EMail> mailList = null;
+    List<Integer> idList = null;
     String errorMessage = null;
     
     public ServerMessage(Type t){
@@ -43,23 +43,18 @@ public class ServerMessage implements Serializable{
         return type;
     }
         
-    public ServerMessage(ArrayList<EMail> mailList, int lastPulled, int size){
+    public ServerMessage(List<EMail> mails, List<Integer> ids){
         type = Type.UPDATE_INBOX_SUCCESS;
-        inboxList = new ArrayList<EMail>(mailList);
-        lastPulledID = lastPulled;
-        serverInboxSize = size;
+        mailList = new ArrayList<EMail>(mails); 
+        idList = new ArrayList<Integer>(ids);
     }
     
-    public ArrayList<EMail> getInboxList(){
-        return inboxList;
+    public List<EMail> getFolderMailList(){
+        return mailList;
     }
     
-    public int getServerInboxSize(){
-        return serverInboxSize;
-    }
-    
-    public int getLastPulledID(){
-        return lastPulledID;
+    public List<Integer> getFolderIDList(){
+        return idList;
     }
 
     public String getErrorMessage() {

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
@@ -20,18 +21,20 @@ import mailapp.server.FileLocker;
  * @author pauty
  */
 
-public class DeleteMailTask implements Callable<Boolean>{
+public class DeleteMailsTask implements Callable<Boolean>{
         User user;
-        ArrayList<Integer> toDelete;
-        public DeleteMailTask(User u, ArrayList<Integer> ids){
+        String folderName;
+        List<Integer> toDelete;
+        public DeleteMailsTask(User u, String folder, List<Integer> ids){
             user = u;
-            toDelete = ids;     
+            folderName = folder;
+            toDelete = new ArrayList<Integer>(ids);     
         }
 
         @Override
         public Boolean call() {
-            File filein = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/inbox.txt");
-            File fileout = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/inbox.tmp");
+            File filein = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".txt");
+            File fileout = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".tmp");
             Scanner scanner = null;
             PrintWriter writer = null;
             int mailID;

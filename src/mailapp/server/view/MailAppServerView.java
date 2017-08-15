@@ -17,25 +17,23 @@ public class MailAppServerView extends JFrame implements Observer{
     private JScrollPane logScrollPane;
     private JTextArea logTextArea;
     private MailServerImpl server = null;
-
-    @Override
-    public void update(Observable o, Object o1) {
-        String logLine = (String)o1;
-        logTextArea.append(logLine);
-    }
+    
+    //CONTROLLER
     
     private class ButtonListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent ae) {
-            if(server != null)
-                server.shutdown();
+            if(server != null){
+                server.shutdown();     
+            }
             dispose();
         }
-    
     }
     
-    public MailAppServerView() {
+    //END CONTROLLER
+    
+    public MailAppServerView(MailServerImpl s) {
         logScrollPane = new JScrollPane();
         logTextArea = new JTextArea("server set up-------------\n\n\n");
         exitButton = new JButton("Exit");
@@ -54,10 +52,17 @@ public class MailAppServerView extends JFrame implements Observer{
 
         this.setSize(700,400);
         
+        //set server
+        server = s;
+        server.addLogObserver(this);
+        
     }
     
-    public void setServer(MailServerImpl s){
-        server = s;
+    //handle the log updates
+    @Override
+    public void update(Observable o, Object o1) {
+        String logLine = (String)o1;
+        logTextArea.append(logLine);
     }
                  
 }

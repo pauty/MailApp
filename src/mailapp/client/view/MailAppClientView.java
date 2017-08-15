@@ -12,37 +12,36 @@ import mailapp.client.connection.ConnectionManager;
  *
  * @author pauty
  */
-public class MailAppClientView extends JFrame{
-    private static MailAppClientView singleInstance = null;
-    
+public class MailAppClientView extends JFrame{ 
     //switching panels 
     private UserSelectionPanel userSelectionPanel;
     private InboxPanel inboxPanel;
     private MailReaderPanel mailReaderPanel;
     private MailWriterPanel mailWriterPanel;
+    private ConnectionManager connectionManager;
     
     //receives info form connection manager and updates GUI panels
     private class ConnectionManagerObserver implements Observer{
 
         @Override
         public void update(Observable o, Object o1) {
-            inboxPanel.updateInboxList(ConnectionManager.getInstance().getInboxMailList());  
+            inboxPanel.updateInboxList(connectionManager.getFolderMailList("inbox"));  
         }  
     }
     
-    private MailAppClientView(){
+    public MailAppClientView(ConnectionManager cm){
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
         getContentPane().setLayout(new CardLayout());
         
         //create user selection panel
-        userSelectionPanel = new UserSelectionPanel();
+        userSelectionPanel = new UserSelectionPanel(this);
         //create inbox panel
-        inboxPanel = new InboxPanel();
+        inboxPanel = new InboxPanel(this);
         //create mail reader panel
-        mailReaderPanel = new MailReaderPanel();
+        mailReaderPanel = new MailReaderPanel(this);
         //create mail writer panel
-        mailWriterPanel = new MailWriterPanel();
+        mailWriterPanel = new MailWriterPanel(this);
         
         //add switching panels to card layout
         getContentPane().add(userSelectionPanel, "userSelection");
@@ -54,22 +53,17 @@ public class MailAppClientView extends JFrame{
         this.setMinimumSize(new Dimension(500,300));
         
         //adds a new observer to the connection manager
-        ConnectionManager.getInstance().addObserver(new ConnectionManagerObserver());
+        connectionManager = cm;
+        connectionManager.addObserver(new ConnectionManagerObserver());
     }
-    
-    public static MailAppClientView getInstance(){
-        if(singleInstance == null)
-            singleInstance = new MailAppClientView();
-        return singleInstance;
-    }
+
     
     public void showInboxPanel(){
-        inboxPanel.setUserLabel(ConnectionManager.getInstance().getCurrentUser());
+        inboxPanel.setUserLabel(connectionManager.getCurrentUser());
         ((CardLayout)this.getContentPane().getLayout()).show(this.getContentPane(),"inbox");
     }
     
     public void showUserSelectionPanel(){
-        ConnectionManager.getInstance().setCurrentUser(null);
         ((CardLayout)this.getContentPane().getLayout()).show(this.getContentPane(),"userSelection");
     }
     
@@ -83,4 +77,9 @@ public class MailAppClientView extends JFrame{
         mailWriterPanel.initFields(mail, t);
         ((CardLayout)this.getContentPane().getLayout()).show(this.getContentPane(),"mailWriter");
     }   
+    
+    //for swithing panels usage only
+    ConnectionManager getConnectionManager(){
+        return connectionManager;
+    }
 }
