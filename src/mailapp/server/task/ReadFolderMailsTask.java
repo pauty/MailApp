@@ -18,11 +18,11 @@ import mailapp.server.FileLocker;
 import mailapp.server.MailFileHandler;
 import mailapp.server.ServerMessage;
 
-public class GetFolderMailsTask implements Callable<ServerMessage>{
+public class ReadFolderMailsTask implements Callable<ServerMessage>{
         User user;
         String folderName;
         List<Integer> alreadyPulled;
-        public GetFolderMailsTask(User u, String folder, List<Integer> pulled){
+        public ReadFolderMailsTask(User u, String folder, List<Integer> pulled){
             user = u;
             folderName = folder;  
             alreadyPulled = new ArrayList<Integer>(pulled);
@@ -36,11 +36,9 @@ public class GetFolderMailsTask implements Callable<ServerMessage>{
             ArrayList<Integer> idList = new ArrayList<Integer>();
             int mailID;
             EMail mail;
-            
-            boolean mustAdd = false;
             try {
                 scan = new Scanner(file);
-                Lock lock = FileLocker.getInstance().getLockForUser(user.getAddress());
+                Lock lock = FileLocker.getInstance().getLockForUser(user.getAddress()+ "-" + folderName);
                 lock.lock();
                 try {
                     while(scan.hasNextInt()) {

@@ -25,6 +25,7 @@ public class InboxPanel extends JPanel{
     private JButton newMailButton;
     private JButton deleteMailButton;
     private JButton logoutButton;
+    private JComboBox<String> folderComboBox;
     private JLabel welcomeLabel;
     private JList<EMail> mailList;
     private DefaultListModel<EMail> listModel;
@@ -54,6 +55,15 @@ public class InboxPanel extends JPanel{
             else if(ae.getActionCommand().equals("Logout")){
 
             }
+        }      
+    }
+    
+    private class ComboBoxListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            parentFrame.getConnectionManager().setCurrentFolder((String)folderComboBox.getSelectedItem());
+            updateFolderMails(parentFrame.getConnectionManager().getCurrentFolderMails());
         }      
     }
     
@@ -92,7 +102,12 @@ public class InboxPanel extends JPanel{
         logoutButton = new JButton("Logout");
         jScrollPane1 = new JScrollPane();
         mailList = new JList<>();
-
+        //init combo box
+        String[] folderStrings = { "inbox", "sent", "deleted" };
+        folderComboBox = new JComboBox<String>(folderStrings);
+        folderComboBox.setSelectedIndex(0);
+        folderComboBox.addActionListener(new ComboBoxListener());
+        
         setLayout(new BorderLayout());
         
         welcomeLabel.setAlignmentX(CENTER_ALIGNMENT);
@@ -101,7 +116,10 @@ public class InboxPanel extends JPanel{
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
         leftPanel.add(welcomeLabel);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 50)));
+        leftPanel.add(folderComboBox);
+        leftPanel.add(Box.createVerticalGlue());
         leftPanel.add(logoutButton);
+        
 
         add(leftPanel, BorderLayout.LINE_START);
 
@@ -136,7 +154,7 @@ public class InboxPanel extends JPanel{
         welcomeLabel.setText("Welcome back, " + u.getName());
     }
     
-    public void updateInboxList(List<EMail> mailList){
+    public void updateFolderMails(List<EMail> mailList){
         previousSelectedIndex = -2;
         ArrayList<EMail> toDelete = new ArrayList<EMail>();
         //remove mails no longer present in remote inbox (delete)

@@ -18,23 +18,27 @@ import mailapp.EMail;
 import mailapp.User;
 import mailapp.server.FileLocker;
 
-public class SendMailTask implements Callable<Boolean>{
+public class SendMailTask implements Runnable{
         EMail toSend;
         public SendMailTask(EMail mail){
             toSend = mail;
         }
 
         @Override
-        public Boolean call() {
+        public void run() {
             File file = null; 
             PrintWriter out = null; 
             Lock lock = null;
+            String folderName = "inbox";
             ArrayList<User> receivers = toSend.getReceivers();
             for(int i = 0; i < receivers.size(); i++){
                 try {
-                    file = new File("users/" + receivers.get(i).getAddress().replace("@mailapp.com","") + "/inbox.txt");
+                    file = new File("users/" + receivers.get(i).getAddress().replace("@mailapp.com","") + "/" + folderName +".txt");
+                    if(!file.exists()) {
+                        file.createNewFile();
+                    }
                     out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-                    lock = FileLocker.getInstance().getLockForUser(receivers.get(i).getAddress());
+                    lock = FileLocker.getInstance().getLockForUser(receivers.get(i).getAddress()+ "-" + folderName);
                     lock.lock();
                     out.println(toSend.getID());
                 }
@@ -50,6 +54,5 @@ public class SendMailTask implements Callable<Boolean>{
                         out.close();
                 }
             }
-            return true;
         }  
     }

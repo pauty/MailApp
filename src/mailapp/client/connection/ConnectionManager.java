@@ -162,7 +162,7 @@ public class ConnectionManager extends Observable{
         }
         try {
             
-            msg = mailServer.deleteMails(currentUser, currentFolder, ids);
+            msg = mailServer.deleteFolderMails(currentUser, currentFolder, ids);
             
         } catch (RemoteException ex) {
             System.out.println("Error deleting mail !!!");
@@ -193,7 +193,12 @@ public class ConnectionManager extends Observable{
         pullInterval = millisec;
     }
     
-    public List<EMail> getFolderMailList(String folderName){
+    public List<EMail> getFolderMails(String folderName){
         return listMap.get(folderName);
     }
+    
+    public synchronized List<EMail> getCurrentFolderMails(){
+        return listMap.get(currentFolder);
+    }
+    
 }

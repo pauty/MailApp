@@ -5,12 +5,13 @@
         <group>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailReaderPanel.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/connection/ConnectionManager.java</file>
-            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/DeleteMailsTask.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/ReadFolderMailsTask.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/FileLocker.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/SendMailTask.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/InboxMailRenderer.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailServerImpl.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/view/MailAppServerView.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/AddFolderMailsTask.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailFileHandler.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/User.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailAppClientView.java</file>
@@ -18,7 +19,7 @@
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/MailAppClient.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailServer.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/InboxPanel.java</file>
-            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/GetFolderMailsTask.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/DeleteFolderMailsTask.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/UserSelectionPanel.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/ServerMessage.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailWriterPanel.java</file>

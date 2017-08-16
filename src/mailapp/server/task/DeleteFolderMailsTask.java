@@ -21,18 +21,18 @@ import mailapp.server.FileLocker;
  * @author pauty
  */
 
-public class DeleteMailsTask implements Callable<Boolean>{
+public class DeleteFolderMailsTask implements Runnable{
         User user;
         String folderName;
         List<Integer> toDelete;
-        public DeleteMailsTask(User u, String folder, List<Integer> ids){
+        public DeleteFolderMailsTask(User u, String folder, List<Integer> ids){
             user = u;
             folderName = folder;
             toDelete = new ArrayList<Integer>(ids);     
         }
 
         @Override
-        public Boolean call() {
+        public void run() {
             File filein = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".txt");
             File fileout = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".tmp");
             Scanner scanner = null;
@@ -42,7 +42,7 @@ public class DeleteMailsTask implements Callable<Boolean>{
             try {
                 scanner = new Scanner(filein);
                 writer = new PrintWriter(fileout);
-                lock = FileLocker.getInstance().getLockForUser(user.getAddress());
+                lock = FileLocker.getInstance().getLockForUser(user.getAddress() + "-" + folderName);
                 lock.lock();
                 try {
                     while(scanner.hasNextInt()) {
@@ -73,8 +73,7 @@ public class DeleteMailsTask implements Callable<Boolean>{
                 lock.unlock();
             }
             filein.delete();
-            boolean renamed = fileout.renameTo(filein);
-            
-            return renamed;
+            fileout.renameTo(filein);
+
         }
     }

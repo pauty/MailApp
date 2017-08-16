@@ -16,9 +16,9 @@ import mailapp.User;
  */
 public interface MailServer extends Remote{
     
-    public ServerMessage sendMail(EMail mail) throws RemoteException;
+    public void sendMail(EMail mail) throws RemoteException;
     
-    public ServerMessage deleteMails(User user, String folderName, List<Integer> toDelete) throws RemoteException;
+    public ServerMessage deleteFolderMails(User user, String folderName, List<Integer> toDelete) throws RemoteException;
     
     public ServerMessage getFolderMails(User user, String folderName, List<Integer> pulled) throws RemoteException;
    

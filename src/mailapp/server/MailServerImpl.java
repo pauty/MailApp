@@ -19,12 +19,11 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Scanner;
 import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mailapp.EMail;
 import mailapp.User;
-import mailapp.server.task.DeleteMailsTask;
-import mailapp.server.task.GetFolderMailsTask;
+import mailapp.server.task.AddFolderMailsTask;
+import mailapp.server.task.DeleteFolderMailsTask;
+import mailapp.server.task.ReadFolderMailsTask;
 import mailapp.server.task.SendMailTask;
 
 /**
@@ -73,7 +72,7 @@ public class MailServerImpl implements MailServer{
     @Override
     public ServerMessage getFolderMails(User user, String folderName, List<Integer> pulled){
         //logUpdater.updateLog("server is gettin user inbox\n");
-        FutureTask<ServerMessage> ft = new FutureTask<>(new GetFolderMailsTask(user, folderName, pulled));
+        FutureTask<ServerMessage> ft = new FutureTask<>(new ReadFolderMailsTask(user, folderName, pulled));
         exec.execute(ft);
         ServerMessage res = null;
         try {
@@ -89,13 +88,14 @@ public class MailServerImpl implements MailServer{
     }
     
     @Override
-    public ServerMessage sendMail(EMail mail){
+    public void sendMail(EMail mail){
         System.out.println("server is sending mail");
         
         ServerMessage msg;
         ArrayList<User> receivers = mail.getReceivers();
         ArrayList<User> invalidReceivers = new ArrayList<User>();
         File file;
+        
         for(int i = 0; i < receivers.size(); i++){
             file = new File("users/" + receivers.get(i).getAddress().replace("@mailapp.com", ""));
             if(!(file.exists() && file.isDirectory()))
@@ -107,50 +107,32 @@ public class MailServerImpl implements MailServer{
             setMailID(mail);
             MailFileHandler.saveMail(mail);
             
-            FutureTask<Boolean> ft = new FutureTask<>(new SendMailTask(mail));
-            exec.execute(ft);
-            Boolean res = false;
-            try {
-                res = ft.get();
-            } catch (InterruptedException ex) { 
-                System.out.println("Interrupred exception in sendMail");
-            } catch (ExecutionException ex) {
-                 System.out.println("execution exception in sendMail");
-                 ex.printStackTrace();
-            }
+            Runnable sendTask = new SendMailTask(mail);
+            ArrayList<Integer> id = new ArrayList<Integer>();
+            id.add(mail.getID());
+            Runnable addTask = new AddFolderMailsTask(mail.getSender(), "sent", id);
+            exec.execute(sendTask);
+            exec.execute(addTask);
+            
             msg = new ServerMessage(ServerMessage.Type.SEND_MAIL_SUCCESS);
         }
         else{
             msg = new ServerMessage("ee");
         }
         System.out.println("server has finished sending");
-        
-        return msg;
     }
     
     @Override
-    public ServerMessage deleteMails(User user, String folderName, List<Integer> toDelete){
+    public ServerMessage deleteFolderMails(User user, String folderName, List<Integer> toDelete){
         ServerMessage msg = null;
         
-        FutureTask<Boolean> ft = new FutureTask<>(new DeleteMailsTask(user, folderName, toDelete));
-        exec.execute(ft);
-        Boolean res = false;
-        try {
-            res = ft.get();
-        } catch (InterruptedException ex) { 
-            System.out.println("Interrupred exception in deleteMail");
-        } catch (ExecutionException ex) {
-             System.out.println("execution exception in deleteMail");
-             ex.printStackTrace();
-        }
-        if(msg!=null)
-            System.out.println(msg.getType());
-        if(res){
-            msg = new ServerMessage(ServerMessage.Type.DELETE_SUCCESS);
-        }
-        else{
-            msg = new ServerMessage("eerrrror");
-        }
+        Runnable deleteTask = new DeleteFolderMailsTask(user, folderName, toDelete);
+        Runnable addTask = new AddFolderMailsTask(user, "deleted", toDelete);
+        exec.execute(deleteTask);
+        exec.execute(addTask);
+        
+        msg = new ServerMessage(ServerMessage.Type.DELETE_SUCCESS);
+  
         return msg;
     }
     
