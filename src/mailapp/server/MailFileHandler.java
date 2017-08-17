@@ -115,6 +115,10 @@ public class MailFileHandler {
         }
         catch(Exception e){
             System.out.println("another Error saving mail: " + mail.getID());   
-        } 
+        }
+        finally{
+            if(out != null)
+                out.close();
+        }
     }
 }

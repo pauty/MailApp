@@ -7,6 +7,7 @@ package mailapp.client.view;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,10 +51,13 @@ public class InboxPanel extends JPanel{
                 for(int i = 0; i < indices.length; i++){
                     mails.add(listModel.get(indices[i]));
                 }
-                parentFrame.getConnectionManager().deleteMail(mails);
+                String folder = (String)folderComboBox.getSelectedItem();
+                parentFrame.getConnectionManager().deleteMail(folder, mails);
             }
             else if(ae.getActionCommand().equals("Logout")){
-
+                parentFrame.getConnectionManager().disconnect();
+                listModel.clear();
+                parentFrame.showUserSelectionPanel();
             }
         }      
     }
@@ -61,9 +65,8 @@ public class InboxPanel extends JPanel{
     private class ComboBoxListener implements ActionListener{
 
         @Override
-        public void actionPerformed(ActionEvent ae) {
-            parentFrame.getConnectionManager().setCurrentFolder((String)folderComboBox.getSelectedItem());
-            updateFolderMails(parentFrame.getConnectionManager().getCurrentFolderMails());
+        public void actionPerformed(ActionEvent ae){
+            updateFolderMails();
         }      
     }
     
@@ -102,8 +105,9 @@ public class InboxPanel extends JPanel{
         logoutButton = new JButton("Logout");
         jScrollPane1 = new JScrollPane();
         mailList = new JList<>();
+        
         //init combo box
-        String[] folderStrings = { "inbox", "sent", "deleted" };
+        String[] folderStrings = parentFrame.getConnectionManager().getFolderNames();
         folderComboBox = new JComboBox<String>(folderStrings);
         folderComboBox.setSelectedIndex(0);
         folderComboBox.addActionListener(new ComboBoxListener());
@@ -118,13 +122,15 @@ public class InboxPanel extends JPanel{
         leftPanel.add(Box.createRigidArea(new Dimension(0, 50)));
         leftPanel.add(folderComboBox);
         leftPanel.add(Box.createVerticalGlue());
+        logoutButton.setFont(new Font("Noto Sans", 1, 16));
         leftPanel.add(logoutButton);
-        
-
+        leftPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
         add(leftPanel, BorderLayout.LINE_START);
 
         rightPanel.setLayout(new BorderLayout());
-
+        
+        newMailButton.setFont(new Font("Noto Sans", 1, 16));
+        deleteMailButton.setFont(new Font("Noto Sans", 1, 16));
         buttonsPanel.add(newMailButton);
         buttonsPanel.add(deleteMailButton);
 
@@ -133,6 +139,7 @@ public class InboxPanel extends JPanel{
         ButtonsListener buttonListener = new ButtonsListener();
         newMailButton.addActionListener(buttonListener);
         deleteMailButton.addActionListener(buttonListener);
+        logoutButton.addActionListener(buttonListener);
  
         listModel = new DefaultListModel<EMail>();
   
@@ -147,28 +154,33 @@ public class InboxPanel extends JPanel{
 
         add(rightPanel, BorderLayout.CENTER);
         
-        this.setBorder(new EmptyBorder(10,10,10,10));       
+        this.setBorder(new EmptyBorder(10, 10, 10, 10)); 
+        
     }
     
     public void setUserLabel(User u){
         welcomeLabel.setText("Welcome back, " + u.getName());
     }
     
-    public void updateFolderMails(List<EMail> mailList){
+    public void updateFolderMails(){
         previousSelectedIndex = -2;
+        //this.mailList.clearSelection();
+        String folder = (String)folderComboBox.getSelectedItem();
+        List<EMail> mails = parentFrame.getConnectionManager().getFolderMails(folder);
+        
         ArrayList<EMail> toDelete = new ArrayList<EMail>();
         //remove mails no longer present in remote inbox (delete)
         for(int i = 0; i < listModel.size(); i++){
-            if(!mailList.contains(listModel.get(i)))
+            if(!mails.contains(listModel.get(i)))
                 toDelete.add(listModel.get(i));
         }
         for(int i = 0; i < toDelete.size(); i++){
             listModel.removeElement(toDelete.get(i));
         }
         //add new mails not yet listed in local inbox (update)
-        for(int i = 0; i < mailList.size(); i++){
-            if(!listModel.contains(mailList.get(i)))
-                listModel.insertElementAt(mailList.get(i), i);
+        for(int i = 0; i < mails.size(); i++){
+            if(!listModel.contains(mails.get(i)))
+                listModel.insertElementAt(mails.get(i), i);
         }   
     }
 }

@@ -10,7 +10,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import mailapp.User;
-import mailapp.client.connection.ConnectionManager;
 
 /**
  *
@@ -52,8 +51,10 @@ public class UserSelectionPanel extends JPanel{
             //change te current user
             user = new User(userName, userAddress);
             parentFrame.getConnectionManager().setCurrentUser(user);
+            boolean ok = parentFrame.getConnectionManager().connect();
             //make the view show show inbox panel
-            parentFrame.showInboxPanel();
+            if(ok)
+                parentFrame.showInboxPanel();
         }
     }  
     
@@ -67,15 +68,18 @@ public class UserSelectionPanel extends JPanel{
         jLabel1 = new javax.swing.JLabel();
         userComboBox = new JComboBox<String>();
         loginButton = new JButton();
+        
+        this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-        jLabel1.setFont(new Font("Noto Sans", 0, 14)); 
+        jLabel1.setFont(new Font("Noto Sans", 0, 16)); 
         jLabel1.setText("Please select an user   ");
         add(jLabel1);
 
-        userComboBox.setFont(new Font("Noto Sans", 0, 14)); 
+        userComboBox.setFont(new Font("Noto Sans", 0, 16)); 
         userComboBox.setModel(new DefaultComboBoxModel<>(new String[] { USERNAME1, USERNAME2, USERNAME3 }));
         add(userComboBox);
         
+        loginButton.setFont(new Font("Noto Sans", 1, 16));
         loginButton.addActionListener(new loginButtonListener());
         loginButton.setText("Login");
         add(loginButton);

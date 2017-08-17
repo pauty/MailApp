@@ -17,7 +17,7 @@ public class MailAppClient {
         
         //creates and start connection manager
         ConnectionManager connectionManager = new ConnectionManager();
-        connectionManager.connect();
+        
         //creates GUI
         MailAppClientView view = new MailAppClientView(connectionManager);
         view.setVisible(true);

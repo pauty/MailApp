@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package mailapp.client.connection;
 
 import java.rmi.*;
@@ -23,56 +19,60 @@ import mailapp.server.MailServer;
  * @author pauty
  */ 
 public class ConnectionManager extends Observable{
-    
-    private final static int DEFAULT_PULL_INTERVAL = 8000;
+    public enum LastAction{
+        INBOX_UPDATE,
+        OTHER_UPDATE,
+        DISCONNECT
+    }
+    public static String INBOX = "inbox"; 
+    public static String SENT = "sent"; 
+    public static String DELETED = "deleted"; 
+    private final static int DEFAULT_PULL_INTERVAL = 5000;
     private final static int DEFAULT_SERVER_PORT = 6667;
     private final static String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
     private int pullInterval = DEFAULT_PULL_INTERVAL ;
+    private String[] folderNames = { INBOX , SENT, DELETED };
+    private int[] updatePattern = {0, 1, 0, 2};
+    private int currentFolder = 0;
     private MailServer mailServer = null;
     private Registry registry = null;
     private User currentUser = null;
-    private HashMap<String , List<EMail>> listMap;
-    private String currentFolder = "inbox";
+    private HashMap<String , List<EMail>> listMap = null;
+    private ArrayList<EMail> newInboxMails= new ArrayList<EMail>();
+    private boolean initDone = false;
     
-    public ConnectionManager(){
-        listMap = new HashMap<String, List<EMail>>();
-        listMap.put("inbox", new ArrayList<EMail>());
-        listMap.put("sent", new ArrayList<EMail>());
-        listMap.put("deleted", new ArrayList<EMail>());
-        
-               
-        try{
-            registry = LocateRegistry.getRegistry(DEFAULT_SERVER_ADDRESS, DEFAULT_SERVER_PORT);
-            mailServer = (MailServer) (registry.lookup("MailServer"));
-        }
-        catch(NotBoundException | RemoteException e){
-            System.out.println("Problema: " + e.getMessage());
-        }
-    }
-        
-    public void connect(){
-        new Thread(new MailPullLoop()).start();
-    }
+    private MailPullLoop pullLoop = null;
     
     private class MailPullLoop implements Runnable{
         private volatile boolean isRunning = true;
         private final Object lockObj = new Object();
         @Override
-        public void run() {
+        public void run(){
             while(isRunning){
-                updateFolderMails();
-                synchronized (lockObj) {
+                
+                if(!initDone){
+                    for(int i = 0; i < folderNames.length; i++)
+                        updateFolderMails(folderNames[i]);
+                    initDone = true;
+                }
+                else{
+                    updateFolderMails(folderNames[updatePattern[currentFolder]]);
+                    currentFolder++;
+                    currentFolder = currentFolder % updatePattern.length;
+                }
+                
+                synchronized (lockObj){
                     try{
                         lockObj.wait(pullInterval);
-                    } catch(InterruptedException e){
-                        //Handle Exception
+                    }catch(InterruptedException e){
+                        e.printStackTrace();
                     }
                 }
             }
         }
         
-        public void wakeup() {
-            synchronized (lockObj) {
+        public void wakeup(){
+            synchronized (lockObj){
                 lockObj.notify();
             }
         }
@@ -82,25 +82,69 @@ public class ConnectionManager extends Observable{
         }    
     }
     
-    private synchronized void updateFolderMails(){
+    public ConnectionManager(){
+        listMap = new HashMap<String, List<EMail>>();
+        listMap.put("inbox", new ArrayList<EMail>());
+        listMap.put("sent", new ArrayList<EMail>());
+        listMap.put("deleted", new ArrayList<EMail>());     
+    }
+        
+    public boolean connect(){
+        boolean success = true;
+        try{
+            registry = LocateRegistry.getRegistry(DEFAULT_SERVER_ADDRESS, DEFAULT_SERVER_PORT);
+            mailServer = (MailServer)registry.lookup("MailServer");
+        }
+        catch(NotBoundException | RemoteException e){
+            System.out.println("Problema: " + e.getMessage());
+            success = false;
+        }
+        if(success){
+            pullLoop = new MailPullLoop();
+            new Thread(pullLoop).start();
+        }
+        initDone = false;
+        currentFolder = 0;
+        return success;
+    }
+    
+    public void disconnect(){
+        if(pullLoop != null){
+            pullLoop.stop(); 
+            pullLoop.wakeup();
+            pullLoop = null;
+        }
+        registry = null;
+        mailServer = null;
+        listMap.get("inbox").clear();
+        listMap.get("sent").clear();
+        listMap.get("deleted").clear();
+    }
+    
+    private synchronized void updateFolderMails(String folderName){
         ServerMessage msg = null;
 
         System.out.println("client asking for inbox");
         
         if(mailServer != null && currentUser != null){
-        
+            ConnectionManager.LastAction action = ConnectionManager.LastAction.OTHER_UPDATE;
+            
             ArrayList<Integer> pulledIDs = new ArrayList<Integer>();
-            List<EMail> mailList = listMap.get(currentFolder);
+            List<EMail> mailList = listMap.get(folderName);
             for(int i = 0; i < mailList.size(); i++){
                 pulledIDs.add(mailList.get(i).getID());
             }
 
             try{
-                msg = mailServer.getFolderMails(currentUser, currentFolder, pulledIDs );
+                msg = mailServer.getFolderMails(currentUser, folderName, pulledIDs );
 
-                ArrayList<EMail> newList = (ArrayList<EMail>) msg.getFolderMailList();
-                for(int i = 0; i < newList.size(); i ++){
-                    mailList.add(i , newList.get(i));
+                ArrayList<EMail> newList = (ArrayList<EMail>)msg.getFolderMailList();
+                for(int i = 0; i < newList.size(); i++){
+                    mailList.add(0 , newList.get(i));
+                }
+                if(folderName.equals(INBOX) && initDone){ //init update does not show dialog
+                    newInboxMails = newList;
+                    action = ConnectionManager.LastAction.INBOX_UPDATE;
                 }
                 
                 ArrayList<Integer> remoteIDs = (ArrayList<Integer>) msg.getFolderIDList();
@@ -114,7 +158,7 @@ public class ConnectionManager extends Observable{
                 }
 
                 setChanged();
-                notifyObservers(); //notify to the gui it's time to update
+                notifyObservers(action); //notify to the gui it's time to update
                 
             } catch (RemoteException ex) {
                 System.out.println("ERROR get userinbox");
@@ -123,10 +167,8 @@ public class ConnectionManager extends Observable{
         }     
     }
    
-    
-    public synchronized boolean sendMail(String to, String subject, String body, int inReplyTo){
-        if(mailServer != null){
-            
+    public synchronized void sendMail(String to, String subject, String body, int inReplyTo){
+        if(mailServer != null && currentUser != null){
             //sender
             User sender = this.currentUser;
             //receivers
@@ -144,41 +186,38 @@ public class ConnectionManager extends Observable{
             EMail mail = new EMail(-99, sender, receivers, subject, body, date, priority, inReplyTo);
             
             try {
-                
-                mailServer.sendMail(mail);
-                
+                mailServer.sendMail(mail);   
             } catch (RemoteException ex) {
                 System.out.println("Error sending mail !!!");
             }
         }
-        return true;
     }
     
-    public synchronized void deleteMail(ArrayList<EMail> mails){
-        ServerMessage msg = null;
-        ArrayList<Integer> ids = new ArrayList<Integer>();
-        for(int i = 0; i< mails.size(); i++){
-            ids.add(mails.get(i).getID());
-        }
-        try {
+    public synchronized void deleteMail(String folderName, ArrayList<EMail> mails){
+        if(mailServer != null && currentUser != null){
             
-            msg = mailServer.deleteFolderMails(currentUser, currentFolder, ids);
-            
-        } catch (RemoteException ex) {
-            System.out.println("Error deleting mail !!!");
-        }
-        if(msg != null && msg.getType() == ServerMessage.Type.DELETE_SUCCESS){
+            ArrayList<Integer> ids = new ArrayList<Integer>();
             for(int i = 0; i< mails.size(); i++){
-                listMap.get(currentFolder).remove(mails.get(i));
+                ids.add(mails.get(i).getID());
+            }
+            try {
+                mailServer.deleteFolderMails(currentUser, folderName, ids);
+            } catch (RemoteException ex) {
+                System.out.println("Error deleting mail !!!");
             }
             
+            //local remove and add to deleted folder
+            EMail mail;
+            for(int i = 0; i < mails.size(); i++){
+                mail = mails.get(i);
+                listMap.get(folderName).remove(mail);
+                if(!folderName.equals(DELETED))
+                    listMap.get(DELETED).add(i, mail);
+            }
+
             setChanged();
-            notifyObservers();
-        } 
-    }
-    
-    public synchronized void setCurrentFolder(String folderName){
-        currentFolder = folderName;
+            notifyObservers(LastAction.OTHER_UPDATE);    
+        }
     }
     
     public void setCurrentUser(User u){
@@ -197,8 +236,12 @@ public class ConnectionManager extends Observable{
         return listMap.get(folderName);
     }
     
-    public synchronized List<EMail> getCurrentFolderMails(){
-        return listMap.get(currentFolder);
+    public String[] getFolderNames(){
+        return folderNames;
+    }
+    
+    public List<EMail> getNewInboxMails(){
+        return newInboxMails;
     }
     
 }

@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package mailapp.server;
 
 import java.io.File;
@@ -125,17 +121,13 @@ public class MailServerImpl implements MailServer{
     }
     
     @Override
-    public ServerMessage deleteFolderMails(User user, String folderName, List<Integer> toDelete){
-        ServerMessage msg = null;
-        
+    public void deleteFolderMails(User user, String folderName, List<Integer> toDelete){      
         Runnable deleteTask = new DeleteFolderMailsTask(user, folderName, toDelete);
-        Runnable addTask = new AddFolderMailsTask(user, "deleted", toDelete);
         exec.execute(deleteTask);
-        exec.execute(addTask);
-        
-        msg = new ServerMessage(ServerMessage.Type.DELETE_SUCCESS);
-  
-        return msg;
+       if(!folderName.equals("deleted")){
+            Runnable addTask = new AddFolderMailsTask(user, "deleted", toDelete);
+            exec.execute(addTask);
+        }  
     }
     
     private EMail createErrorMail(EMail mail, List<User> invalidReceivers){

@@ -1,8 +1,10 @@
 
 package mailapp.client.view;
+import java.awt.CardLayout;
+import java.awt.Dimension;
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import mailapp.EMail;
@@ -25,11 +27,25 @@ public class MailAppClientView extends JFrame{
 
         @Override
         public void update(Observable o, Object o1) {
-            inboxPanel.updateFolderMails(connectionManager.getCurrentFolderMails());  
-        }  
+            ConnectionManager.LastAction action = (ConnectionManager.LastAction)o1;
+            if(action.equals(ConnectionManager.LastAction.INBOX_UPDATE)){
+                List<EMail> newMails = connectionManager.getNewInboxMails();
+                if(!newMails.isEmpty())
+                    showNewMailMessageDialog(newMails);
+                inboxPanel.updateFolderMails();  
+            }
+            else if(action.equals(ConnectionManager.LastAction.OTHER_UPDATE)){
+                inboxPanel.updateFolderMails();
+            }
+        }
     }
     
     public MailAppClientView(ConnectionManager cm){
+        //adds a new observer to the connection manager
+        connectionManager = cm;
+        connectionManager.addObserver(new ConnectionManagerObserver());
+        
+        //init GUI
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
         getContentPane().setLayout(new CardLayout());
@@ -51,10 +67,6 @@ public class MailAppClientView extends JFrame{
 
         this.setSize(800, 500);
         this.setMinimumSize(new Dimension(500,300));
-        
-        //adds a new observer to the connection manager
-        connectionManager = cm;
-        connectionManager.addObserver(new ConnectionManagerObserver());
     }
 
     
@@ -77,6 +89,19 @@ public class MailAppClientView extends JFrame{
         mailWriterPanel.initFields(mail, t);
         ((CardLayout)this.getContentPane().getLayout()).show(this.getContentPane(),"mailWriter");
     }   
+    
+    private void showNewMailMessageDialog(List<EMail> mails){
+        String mailString = "";
+        for(int i = 0; i < mails.size(); i++){
+            mailString += mails.get(i).getSender().getName() + " - " + mails.get(i).getSubject() + "\n";
+        }
+        //JOptionPane pane = new JOptionPane();
+        //pane.cre
+        JOptionPane.showMessageDialog(new JDialog(this),
+                        "You have new Inbox mails:\n" + mailString,
+                        "New Inbox Mails",
+                         JOptionPane.INFORMATION_MESSAGE);
+    }
     
     //for swithing panels usage only
     ConnectionManager getConnectionManager(){

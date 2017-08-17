@@ -18,7 +18,7 @@ public interface MailServer extends Remote{
     
     public void sendMail(EMail mail) throws RemoteException;
     
-    public ServerMessage deleteFolderMails(User user, String folderName, List<Integer> toDelete) throws RemoteException;
+    public void deleteFolderMails(User user, String folderName, List<Integer> toDelete) throws RemoteException;
     
     public ServerMessage getFolderMails(User user, String folderName, List<Integer> pulled) throws RemoteException;
    
