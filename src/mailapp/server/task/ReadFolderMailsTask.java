@@ -38,7 +38,7 @@ public class ReadFolderMailsTask implements Callable<ServerMessage>{
             EMail mail;
             try {
                 scan = new Scanner(file);
-                Lock lock = FileLocker.getInstance().getLockForUser(user.getAddress()+ "-" + folderName);
+                Lock lock = (FileLocker.getInstance().getLockForUser(user.getAddress()+ "-" + folderName)).readLock();
                 lock.lock();
                 try {
                     while(scan.hasNextInt()) {

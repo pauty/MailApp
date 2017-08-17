@@ -9,16 +9,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import mailapp.EMail;
+import java.util.concurrent.locks.ReadWriteLock;
 import mailapp.User;
 import mailapp.server.FileLocker;
-import mailapp.server.MailFileHandler;
-import mailapp.server.ServerMessage;
 
 public class AddFolderMailsTask implements Runnable{
         User user;
@@ -39,7 +33,7 @@ public class AddFolderMailsTask implements Runnable{
                     file.createNewFile();
                 }
                 out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-                Lock lock = FileLocker.getInstance().getLockForUser(user.getAddress()+ "-" + folderName);
+                Lock lock = (FileLocker.getInstance().getLockForUser(user.getAddress()+ "-" + folderName)).writeLock();
                 lock.lock();
                 try {
                     for(int i = toAdd.size()-1; i >= 0; i--){

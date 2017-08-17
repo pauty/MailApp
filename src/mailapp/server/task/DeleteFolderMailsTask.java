@@ -42,24 +42,15 @@ public class DeleteFolderMailsTask implements Runnable{
             try {
                 scanner = new Scanner(filein);
                 writer = new PrintWriter(fileout);
-                lock = FileLocker.getInstance().getLockForUser(user.getAddress() + "-" + folderName);
+                lock = (FileLocker.getInstance().getLockForUser(user.getAddress() + "-" + folderName)).writeLock();
                 lock.lock();
-                try {
-                    while(scanner.hasNextInt()) {
-                        try {
-                            mailID = scanner.nextInt();
-                            if(!toDelete.contains(mailID)){
-                                writer.println(mailID);
-                            }
-                        }
-                        catch(NumberFormatException e){
-                            System.out.println("Erroneous parse:");
-                        }
-                    } 
+                while(scanner.hasNextInt()) {
+                    mailID = scanner.nextInt();
+                    if(!toDelete.contains(mailID))
+                        writer.println(mailID);
                 } 
-                finally {
-                    
-                }
+                filein.delete();
+                fileout.renameTo(filein);
             } 
             catch(FileNotFoundException e) {
                 e.printStackTrace();
@@ -72,8 +63,5 @@ public class DeleteFolderMailsTask implements Runnable{
                 if(lock != null)
                 lock.unlock();
             }
-            filein.delete();
-            fileout.renameTo(filein);
-
         }
     }

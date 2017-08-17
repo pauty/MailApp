@@ -12,7 +12,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import mailapp.EMail;
 import mailapp.User;
@@ -38,7 +37,7 @@ public class SendMailTask implements Runnable{
                         file.createNewFile();
                     }
                     out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-                    lock = FileLocker.getInstance().getLockForUser(receivers.get(i).getAddress()+ "-" + folderName);
+                    lock = (FileLocker.getInstance().getLockForUser(receivers.get(i).getAddress()+ "-" + folderName)).writeLock();
                     lock.lock();
                     out.println(toSend.getID());
                 }

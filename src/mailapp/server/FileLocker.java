@@ -7,7 +7,8 @@ package mailapp.server;
 
 import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
@@ -15,10 +16,10 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class FileLocker {
     private static FileLocker singleInstance = null;
-    private HashMap<String, Lock> lockMap;
+    private HashMap<String, ReadWriteLock> lockMap;
             
     private FileLocker(){
-        lockMap = new HashMap<String, Lock>();
+        lockMap = new HashMap<String, ReadWriteLock>();
     }
     
     public static FileLocker getInstance(){
@@ -27,10 +28,10 @@ public class FileLocker {
         return singleInstance;
     }
     
-    public Lock getLockForUser(String userAddress){
-        Lock lock = lockMap.get(userAddress);
+    public ReadWriteLock getLockForUser(String userAddress){
+        ReadWriteLock lock = lockMap.get(userAddress);
         if(lock == null){
-            lock = new ReentrantLock();
+            lock = new ReentrantReadWriteLock();
             lockMap.put(userAddress, lock);
         }
         return lock;  

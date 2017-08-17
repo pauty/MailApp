@@ -14,6 +14,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -91,7 +92,6 @@ public class MailServerImpl implements MailServer{
     public void sendMail(EMail mail){
         System.out.println("server is sending mail");
         
-        ServerMessage msg;
         ArrayList<User> receivers = mail.getReceivers();
         ArrayList<User> invalidReceivers = new ArrayList<User>();
         File file;
@@ -102,23 +102,25 @@ public class MailServerImpl implements MailServer{
                 invalidReceivers.add(receivers.get(i));
         }
         
-        if(invalidReceivers.isEmpty()){
-            
-            setMailID(mail);
-            MailFileHandler.saveMail(mail);
-            
-            Runnable sendTask = new SendMailTask(mail);
-            ArrayList<Integer> id = new ArrayList<Integer>();
-            id.add(mail.getID());
-            Runnable addTask = new AddFolderMailsTask(mail.getSender(), "sent", id);
-            exec.execute(sendTask);
-            exec.execute(addTask);
-            
-            msg = new ServerMessage(ServerMessage.Type.SEND_MAIL_SUCCESS);
+        setMailID(mail);
+        MailFileHandler.saveMail(mail);
+        
+        ArrayList<Integer> id = new ArrayList<Integer>();
+        id.add(mail.getID());
+        Runnable addTask = new AddFolderMailsTask(mail.getSender(), "sent", id);
+        exec.execute(addTask);
+        
+        Runnable sendTask;
+        if(invalidReceivers.isEmpty()){  
+            sendTask = new SendMailTask(mail);  
         }
         else{
-            msg = new ServerMessage("ee");
+            EMail errorMail = createErrorMail(mail, invalidReceivers);
+            MailFileHandler.saveMail(errorMail);
+            sendTask = new SendMailTask(errorMail);
         }
+        exec.execute(sendTask);  
+        
         System.out.println("server has finished sending");
     }
     
@@ -134,6 +136,30 @@ public class MailServerImpl implements MailServer{
         msg = new ServerMessage(ServerMessage.Type.DELETE_SUCCESS);
   
         return msg;
+    }
+    
+    private EMail createErrorMail(EMail mail, List<User> invalidReceivers){
+        User sender = new User("Server Error Message", " ");
+        ArrayList<User> receivers = new ArrayList<User>();
+        receivers.add(mail.getSender());
+        String subject = "Fatal error sending mail";
+        String body = "A fatal error occurred while sending your mail.\n" + 
+                   "Mail server could not resolve the following addresses: \n\n" +
+                    User.printUserAddressesList(invalidReceivers, ", ") + "\n\n" +
+                    "Please check for errors and retry." + 
+                    "\n\n----------------------------------------------------------------\n\n" +
+                    "original message:\n\n" +
+                    "Subject: " + mail.getSubject() + "\n" +
+                    "From: " + mail.getSender().getAddress() + "\n" +
+                    "To: " + User.printUserAddressesList(mail.getReceivers(), ", ") + "\n" +
+                    "Date: " + mail.getDateString("dd/MM/yyyy   HH:mm:ss") + "\n\n";
+        String[] bodyLines = mail.getBody().split("\n");
+        for(int i = 0; i < bodyLines.length; i++){
+            body += "|   " + bodyLines[i] + "\n";
+        }
+        EMail errorMail = new EMail(-99, sender, receivers, subject, body, new Date(), 0, -1);
+        setMailID(errorMail);
+        return errorMail;
     }
     
     public void addLogObserver(Observer o){
