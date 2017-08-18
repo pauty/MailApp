@@ -5,6 +5,7 @@
  */
 package mailapp.client.view;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -47,6 +48,8 @@ public class InboxPanel extends JPanel{
             }
             else if(ae.getActionCommand().equals("Delete")){
                 int[] indices = mailList.getSelectedIndices();
+                if(indices.length == 0)
+                    return;
                 ArrayList<EMail> mails = new ArrayList<EMail>();
                 for(int i = 0; i < indices.length; i++){
                     mails.add(listModel.get(indices[i]));
@@ -105,32 +108,41 @@ public class InboxPanel extends JPanel{
         logoutButton = new JButton("Logout");
         jScrollPane1 = new JScrollPane();
         mailList = new JList<>();
+        Font bigFont = new Font("Noto Sans", 1, 16);
         
         //init combo box
         String[] folderStrings = parentFrame.getConnectionManager().getFolderNames();
         folderComboBox = new JComboBox<String>(folderStrings);
         folderComboBox.setSelectedIndex(0);
         folderComboBox.addActionListener(new ComboBoxListener());
+        folderComboBox.setFont(bigFont);
+        folderComboBox.setMaximumSize(new Dimension(150,30));
         
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        
+        welcomeLabel.setMaximumSize(new Dimension(200, 40));
+        welcomeLabel.setMinimumSize(new Dimension(200, 40));
+        welcomeLabel.setPreferredSize(new Dimension(200, 40));
         
         welcomeLabel.setAlignmentX(CENTER_ALIGNMENT);
+        folderComboBox.setAlignmentX(CENTER_ALIGNMENT);
         logoutButton.setAlignmentX(CENTER_ALIGNMENT);
-        welcomeLabel.setMaximumSize(new Dimension(200, 20));
+        
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
+        leftPanel.setMinimumSize(new Dimension(250, 10));
         leftPanel.add(welcomeLabel);
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 50)));
+        leftPanel.add(Box.createRigidArea(new Dimension(6, 50)));
         leftPanel.add(folderComboBox);
         leftPanel.add(Box.createVerticalGlue());
-        logoutButton.setFont(new Font("Noto Sans", 1, 16));
+        logoutButton.setFont(bigFont);
         leftPanel.add(logoutButton);
         leftPanel.setBorder(new EmptyBorder(0, 0, 0, 10));
-        add(leftPanel, BorderLayout.LINE_START);
+        add(leftPanel);
 
         rightPanel.setLayout(new BorderLayout());
         
-        newMailButton.setFont(new Font("Noto Sans", 1, 16));
-        deleteMailButton.setFont(new Font("Noto Sans", 1, 16));
+        newMailButton.setFont(bigFont);
+        deleteMailButton.setFont(bigFont);
         buttonsPanel.add(newMailButton);
         buttonsPanel.add(deleteMailButton);
 
@@ -152,14 +164,14 @@ public class InboxPanel extends JPanel{
 
         rightPanel.add(jScrollPane1, BorderLayout.CENTER);
 
-        add(rightPanel, BorderLayout.CENTER);
+        add(rightPanel);
         
         this.setBorder(new EmptyBorder(10, 10, 10, 10)); 
         
     }
     
     public void setUserLabel(User u){
-        welcomeLabel.setText("Welcome back, " + u.getName());
+        welcomeLabel.setText("<html>Welcome back,<br>" + u.getName() +"</html>");
     }
     
     public void updateFolderMails(){

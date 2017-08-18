@@ -86,6 +86,9 @@ public class MailWriterPanel extends JPanel {
         messagePanel = new JPanel();
         messageScrollPane = new JScrollPane();
         messageTextArea = new JTextArea();
+        Font boldFont = new Font("Noto Sans", 1, 14);
+        Font normalFont = new Font("Noto Sans", 0, 14);
+        Font bigFont = new Font("Noto Sans", 1, 16);
 
         setLayout(new BorderLayout());
 
@@ -95,30 +98,30 @@ public class MailWriterPanel extends JPanel {
         formalLabelPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
         formalLabelPanel.setLayout(new GridLayout(2, 1));
 
-        subjectLabel.setFont(new Font("Noto Sans", 1, 14)); 
+        subjectLabel.setFont(boldFont); 
         formalLabelPanel.add(subjectLabel);
 
-        toLabel.setFont(new Font("Noto Sans", 1, 14)); 
+        toLabel.setFont(boldFont); 
         formalLabelPanel.add(toLabel);
 
         topPanel.add(formalLabelPanel, BorderLayout.WEST);
 
         fieldsPanel.setLayout(new GridLayout(2, 1));
 
-        subjectField.setFont(new Font("Noto Sans", 0, 14)); 
+        subjectField.setFont(normalFont); 
         fieldsPanel.add(subjectField);
 
-        toField.setFont(new Font("Noto Sans", 0, 14));
+        toField.setFont(normalFont);
         fieldsPanel.add(toField);
 
         topPanel.add(fieldsPanel, BorderLayout.CENTER);
 
         buttonsPanel.setLayout(new GridLayout());
 
-        cancelButton.setFont(new Font("Noto Sans", 1, 16));
+        cancelButton.setFont(bigFont);
         buttonsPanel.add(cancelButton);
 
-        sendButton.setFont(new Font("Noto Sans", 1, 16));
+        sendButton.setFont(bigFont);
         buttonsPanel.add(sendButton);
         
         ActionListener listener = new ButtonsListener();
@@ -132,6 +135,7 @@ public class MailWriterPanel extends JPanel {
         messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.LINE_AXIS));
         
+        messageTextArea.setFont(normalFont);
         messageTextArea.setMargin(new Insets(20, 20, 20, 20));
         messageTextArea.setLineWrap(true);
         messageTextArea.setWrapStyleWord(true);

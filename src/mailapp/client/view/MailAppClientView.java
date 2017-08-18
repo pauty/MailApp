@@ -3,7 +3,6 @@ package mailapp.client.view;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -67,6 +66,7 @@ public class MailAppClientView extends JFrame{
 
         this.setSize(800, 500);
         this.setMinimumSize(new Dimension(500,300));
+        this.setTitle("MailApp Client");
     }
 
     

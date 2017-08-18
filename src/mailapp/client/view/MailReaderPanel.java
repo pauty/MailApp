@@ -88,6 +88,9 @@ public class MailReaderPanel extends javax.swing.JPanel {
         messagePanel = new JPanel();
         messageScrollPane = new JScrollPane();
         messageTextArea = new JTextArea();
+        Font boldFont = new Font("Noto Sans", 1, 14);
+        Font normalFont = new Font("Noto Sans", 0, 14);
+        Font bigFont = new Font("Noto Sans", 1, 16);
 
         setLayout(new BorderLayout());
 
@@ -97,35 +100,35 @@ public class MailReaderPanel extends javax.swing.JPanel {
         formalLabelsPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
         formalLabelsPanel.setLayout(new GridLayout(4, 1));
 
-        subjectLabel.setFont(new java.awt.Font("Noto Sans", 1, 14));
+        subjectLabel.setFont(boldFont);
         formalLabelsPanel.add(subjectLabel);
 
-        fromLabel.setFont(new java.awt.Font("Noto Sans", 1, 14)); 
+        fromLabel.setFont(boldFont); 
         formalLabelsPanel.add(fromLabel);
 
-        toLabel.setFont(new java.awt.Font("Noto Sans", 1, 14)); 
+        toLabel.setFont(boldFont); 
         formalLabelsPanel.add(toLabel);
 
-        dateLabel.setFont(new java.awt.Font("Noto Sans", 1, 14)); 
+        dateLabel.setFont(boldFont); 
         formalLabelsPanel.add(dateLabel);
 
         topPanel.add(formalLabelsPanel, BorderLayout.WEST);
 
         ButtonsListener buttonsListener = new ButtonsListener();
         
-        backButton.setFont(new Font("Noto Sans", 1, 16)); 
+        backButton.setFont(bigFont); 
         buttonsPanel.add(backButton);
         backButton.addActionListener(buttonsListener);
 
-        forwardButton.setFont(new Font("Noto Sans", 1, 16)); 
+        forwardButton.setFont(bigFont); 
         buttonsPanel.add(forwardButton);
         forwardButton.addActionListener(buttonsListener);
 
-        replyButton.setFont(new Font("Noto Sans", 1, 16)); 
+        replyButton.setFont(bigFont); 
         buttonsPanel.add(replyButton);
         replyButton.addActionListener(buttonsListener);
 
-        replyallButton.setFont(new Font("Noto Sans", 1, 16)); 
+        replyallButton.setFont(bigFont); 
         buttonsPanel.add(replyallButton);
         replyallButton.addActionListener(buttonsListener);
 
@@ -133,16 +136,16 @@ public class MailReaderPanel extends javax.swing.JPanel {
 
         actualLabelsPanel.setLayout(new GridLayout(4, 1));
 
-        actualSubjectLabel.setFont(new Font("Noto Sans", 0, 14)); 
+        actualSubjectLabel.setFont(normalFont); 
         actualLabelsPanel.add(actualSubjectLabel);
 
-        actualFromLabel.setFont(new Font("Noto Sans", 0, 14)); 
+        actualFromLabel.setFont(normalFont); 
         actualLabelsPanel.add(actualFromLabel);
 
-        actualToLabel.setFont(new Font("Noto Sans", 0, 14)); 
+        actualToLabel.setFont(normalFont); 
         actualLabelsPanel.add(actualToLabel);
 
-        actualDateLabel.setFont(new Font("Noto Sans", 0, 14)); 
+        actualDateLabel.setFont(normalFont); 
         actualLabelsPanel.add(actualDateLabel);
 
         topPanel.add(actualLabelsPanel, BorderLayout.CENTER);
@@ -152,7 +155,8 @@ public class MailReaderPanel extends javax.swing.JPanel {
         messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         messagePanel.setDoubleBuffered(false);
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.LINE_AXIS));
-
+        
+        messageTextArea.setFont(normalFont);
         messageTextArea.setEditable(false);
         messageTextArea.setMargin(new Insets(20, 20, 20, 20));
         messageTextArea.setLineWrap(true);

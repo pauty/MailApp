@@ -19,7 +19,7 @@ public class UserSelectionPanel extends JPanel{
     //hard coded users    
     private final String USERNAME1 = "Alan Turing";
     private final String USERNAME2 = "John Von Neumann";
-    private final String USERNAME3 = "Dijkstra";
+    private final String USERNAME3 = "Edsger Dijkstra";
     private final String USERADDRESS1 = "turing@mailapp.com";
     private final String USERADDRESS2 = "vonneumann@mailapp.com";
     private final String USERADDRESS3 = "dijkstra@mailapp.com";
@@ -73,15 +73,19 @@ public class UserSelectionPanel extends JPanel{
 
         jLabel1.setFont(new Font("Noto Sans", 0, 16)); 
         jLabel1.setText("Please select an user   ");
+        jLabel1.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(jLabel1);
 
         userComboBox.setFont(new Font("Noto Sans", 0, 16)); 
         userComboBox.setModel(new DefaultComboBoxModel<>(new String[] { USERNAME1, USERNAME2, USERNAME3 }));
+        userComboBox.setMaximumSize(new Dimension(200,40));
+        userComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(userComboBox);
         
         loginButton.setFont(new Font("Noto Sans", 1, 16));
         loginButton.addActionListener(new loginButtonListener());
         loginButton.setText("Login");
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(loginButton);
     }
 }

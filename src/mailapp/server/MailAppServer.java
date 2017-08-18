@@ -21,10 +21,10 @@ public class MailAppServer {
            //create and start the server
            MailServerImpl server;
            server = new MailServerImpl();
-           server.start();
            //add the view
            MailAppServerView view = new MailAppServerView(server);
            view.setVisible(true);
+
         }
         catch(RemoteException e) {
             e.printStackTrace();

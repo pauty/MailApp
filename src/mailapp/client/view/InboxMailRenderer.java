@@ -21,14 +21,18 @@ public class InboxMailRenderer extends JPanel implements ListCellRenderer<EMail>
         subjectLabel = new JLabel();
         dateLabel = new JLabel();
 
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         
         senderNameLabel.setBorder(BorderFactory.createEmptyBorder(0,0,0,30));//top,left,bottom,right
+        dateLabel.setBorder(BorderFactory.createEmptyBorder(0,30,0,0));
+        senderNameLabel.setPreferredSize(new Dimension(180, 20));
+        senderNameLabel.setMaximumSize(new Dimension(180, 20));
         this.setBorder(new CompoundBorder(BorderFactory.createMatteBorder(1,0,1,0, Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(15,20,15,20)));
         
-        add(senderNameLabel, BorderLayout.LINE_START);
-        add(subjectLabel, BorderLayout.CENTER);
-        add(dateLabel, BorderLayout.LINE_END);
+        add(senderNameLabel);
+        add(subjectLabel);
+        add(Box.createHorizontalGlue());
+        add(dateLabel);
         
     }                      
                  
