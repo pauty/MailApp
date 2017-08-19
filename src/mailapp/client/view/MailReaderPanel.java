@@ -172,11 +172,11 @@ public class MailReaderPanel extends javax.swing.JPanel {
     public void showMail(EMail mail){
         readingMail = mail;
         
-        actualSubjectLabel.setText(mail.getSubject());
+        actualSubjectLabel.setText("<html>" + mail.getSubject() + "</html>");
         
         actualFromLabel.setText(mail.getSender().getName() + " <"+mail.getSender().getAddress()+">");
         
-        actualToLabel.setText(User.printUserAddressesList(mail.getReceivers(), ", "));
+        actualToLabel.setText("<html>" + User.printUserAddressesList(mail.getReceivers(), ", ") + "</html>");
         
         actualDateLabel.setText(mail.getDateString("dd/MM/yyyy   HH:mm:ss"));
         

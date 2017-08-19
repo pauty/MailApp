@@ -31,10 +31,14 @@ public class MailAppClientView extends JFrame{
                 List<EMail> newMails = connectionManager.getNewInboxMails();
                 if(!newMails.isEmpty())
                     showNewMailMessageDialog(newMails);
-                inboxPanel.updateFolderMails();  
+                inboxPanel.updateFolderMails();
             }
             else if(action.equals(ConnectionManager.LastAction.OTHER_UPDATE)){
                 inboxPanel.updateFolderMails();
+            }
+            else if(action.equals(ConnectionManager.LastAction.DISCONNECT)){
+                userSelectionPanel.setErrorMessage("ERROR - Lost connection to server.");
+                showUserSelectionPanel();
             }
         }
     }
@@ -65,7 +69,7 @@ public class MailAppClientView extends JFrame{
         getContentPane().add(mailWriterPanel, "mailWriter");
 
         this.setSize(800, 500);
-        this.setMinimumSize(new Dimension(500,300));
+        this.setMinimumSize(new Dimension(500,400));
         this.setTitle("MailApp Client");
     }
 
@@ -97,10 +101,24 @@ public class MailAppClientView extends JFrame{
         }
         //JOptionPane pane = new JOptionPane();
         //pane.cre
-        JOptionPane.showMessageDialog(new JDialog(this),
+        /*JOptionPane.showMessageDialog(new JDialog(this),
                         "You have new Inbox mails:\n" + mailString,
                         "New Inbox Mails",
                          JOptionPane.INFORMATION_MESSAGE);
+                         */
+        JOptionPane optionPane = new JOptionPane(
+                "The only way to close this dialog is by\n"
+                + "pressing one of the following buttons.\n"
+                + "Do you understand?",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        final JDialog dialog = new JDialog(this, 
+                                     "Click a button",
+                                     false);
+        dialog.setContentPane(optionPane);
+        
+        dialog.pack();
+        dialog.setVisible(true);
     }
     
     //for swithing panels usage only

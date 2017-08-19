@@ -44,12 +44,13 @@ public class MailServerImpl implements MailServer{
     
     public MailServerImpl() throws RemoteException {
         super();
-        exec = Executors.newFixedThreadPool(NUM_THREADS);
         logUpdater = new LogUpdater();  
     }
     
     public boolean start(){ 
         logUpdater.updateLog("> Starting mail server...\n");
+        
+        exec = Executors.newFixedThreadPool(NUM_THREADS);
         
         File file = new File("settings/mailID.txt");
         try {
@@ -115,7 +116,7 @@ public class MailServerImpl implements MailServer{
         
         ArrayList<Integer> id = new ArrayList<Integer>();
         id.add(mail.getID());
-        Runnable addTask = new AddFolderMailsTask(mail.getSender(), "sent", id);
+        Runnable addTask = new AddFolderMailsTask(mail.getSender(), SENT_FOLDERNAME, id);
         exec.execute(addTask);
         
         Runnable sendTask;
@@ -136,8 +137,8 @@ public class MailServerImpl implements MailServer{
     public void deleteFolderMails(User user, String folderName, List<Integer> toDelete){      
         Runnable deleteTask = new DeleteFolderMailsTask(user, folderName, toDelete);
         exec.execute(deleteTask);
-        if(!folderName.equals("deleted")){
-            Runnable addTask = new AddFolderMailsTask(user, "deleted", toDelete);
+        if(!folderName.equals(DELETED_FOLDERNAME)){
+            Runnable addTask = new AddFolderMailsTask(user, DELETED_FOLDERNAME, toDelete);
             exec.execute(addTask);
         }  
         logUpdater.updateLog("> Deleting "+ toDelete.size() + "mail(s) from " + user.getAddress() + "  \"" + folderName + "\" folder.\n");

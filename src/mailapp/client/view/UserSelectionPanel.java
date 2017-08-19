@@ -24,7 +24,8 @@ public class UserSelectionPanel extends JPanel{
     private final String USERADDRESS2 = "vonneumann@mailapp.com";
     private final String USERADDRESS3 = "dijkstra@mailapp.com";
     
-    private JLabel jLabel1;
+    private JLabel infoLabel;
+    private JLabel errorLabel;
     private JComboBox<String> userComboBox;
     private JButton loginButton;
     private MailAppClientView parentFrame;
@@ -53,8 +54,13 @@ public class UserSelectionPanel extends JPanel{
             parentFrame.getConnectionManager().setCurrentUser(user);
             boolean ok = parentFrame.getConnectionManager().connect();
             //make the view show show inbox panel
-            if(ok)
+            if(ok){
                 parentFrame.showInboxPanel();
+                setErrorMessage("");
+            }
+            else{
+                setErrorMessage("ERROR - Could not connect to server");
+            }
         }
     }  
     
@@ -65,27 +71,41 @@ public class UserSelectionPanel extends JPanel{
         parentFrame = parent;
         
         //init GUI
-        jLabel1 = new javax.swing.JLabel();
+        infoLabel = new JLabel();
+        errorLabel = new JLabel("");
         userComboBox = new JComboBox<String>();
         loginButton = new JButton();
         
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-        jLabel1.setFont(new Font("Noto Sans", 0, 16)); 
-        jLabel1.setText("Please select an user   ");
-        jLabel1.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(jLabel1);
+        infoLabel.setFont(new Font("Noto Sans", 0, 16)); 
+        infoLabel.setText("Please select an user");
+        infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         userComboBox.setFont(new Font("Noto Sans", 0, 16)); 
         userComboBox.setModel(new DefaultComboBoxModel<>(new String[] { USERNAME1, USERNAME2, USERNAME3 }));
         userComboBox.setMaximumSize(new Dimension(200,40));
         userComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(userComboBox);
         
         loginButton.setFont(new Font("Noto Sans", 1, 16));
         loginButton.addActionListener(new loginButtonListener());
         loginButton.setText("Login");
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        errorLabel.setForeground(Color.RED);
+        errorLabel.setAlignmentX(CENTER_ALIGNMENT);
+        
+        add(Box.createRigidArea(new Dimension(10, 100)));
+        add(infoLabel);
+        add(Box.createRigidArea(new Dimension(10, 20)));
+        add(userComboBox);
+        add(Box.createRigidArea(new Dimension(10, 20)));
         add(loginButton);
+        add(Box.createRigidArea(new Dimension(10, 40)));
+        add(errorLabel);
+    }
+    
+    public void setErrorMessage(String msg){
+        errorLabel.setText(msg);
     }
 }

@@ -1,17 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package mailapp.client.view;
+
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -35,7 +33,7 @@ public class InboxPanel extends JPanel{
     private JPanel rightPanel;
     private JPanel buttonsPanel;
     private JScrollPane jScrollPane1;
-    MailAppClientView parentFrame;
+    private MailAppClientView parentFrame;
     
     //CONTROLLER
     
@@ -65,12 +63,14 @@ public class InboxPanel extends JPanel{
         }      
     }
     
-    private class ComboBoxListener implements ActionListener{
-
+    private class ComboBoxListener implements ItemListener{
         @Override
-        public void actionPerformed(ActionEvent ae){
-            updateFolderMails();
-        }      
+        public void itemStateChanged(ItemEvent event) {
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                System.out.println("fired");
+                updateFolderMails();
+           }
+        }       
     }
     
     private int previousSelectedIndex = -2;
@@ -114,7 +114,7 @@ public class InboxPanel extends JPanel{
         String[] folderStrings = parentFrame.getConnectionManager().getFolderNames();
         folderComboBox = new JComboBox<String>(folderStrings);
         folderComboBox.setSelectedIndex(0);
-        folderComboBox.addActionListener(new ComboBoxListener());
+        folderComboBox.addItemListener(new ComboBoxListener());
         folderComboBox.setFont(bigFont);
         folderComboBox.setMaximumSize(new Dimension(150,30));
         
@@ -167,19 +167,31 @@ public class InboxPanel extends JPanel{
         add(rightPanel);
         
         this.setBorder(new EmptyBorder(10, 10, 10, 10)); 
-        
+          
     }
     
     public void setUserLabel(User u){
         welcomeLabel.setText("<html>Welcome back,<br>" + u.getName() +"</html>");
     }
     
-    public void updateFolderMails(){
+    public synchronized void updateFolderMails(){
         previousSelectedIndex = -2;
         //this.mailList.clearSelection();
-        String folder = (String)folderComboBox.getSelectedItem();
-        List<EMail> mails = parentFrame.getConnectionManager().getFolderMails(folder);
         
+        //the list model must be updated by swing event queue
+        SwingUtilities.invokeLater(new Runnable() {           
+            @Override
+            public void run(){
+                String folder = (String)folderComboBox.getSelectedItem();
+                List<EMail> mails = parentFrame.getConnectionManager().getFolderMails(folder);
+
+                listModel.clear();
+                for(int i = mails.size() - 1; i >= 0; i--){
+                    listModel.addElement(mails.get(i));
+                }
+            }
+        });
+        /*
         ArrayList<EMail> toDelete = new ArrayList<EMail>();
         //remove mails no longer present in remote inbox (delete)
         for(int i = 0; i < listModel.size(); i++){
@@ -191,8 +203,10 @@ public class InboxPanel extends JPanel{
         }
         //add new mails not yet listed in local inbox (update)
         for(int i = 0; i < mails.size(); i++){
-            if(!listModel.contains(mails.get(i)))
-                listModel.insertElementAt(mails.get(i), i);
-        }   
+            if(!listModel.contains(mails.get(i))){
+                listModel.e(i, mails.get(i));
+            }
+        }*/  
+        
     }
 }

@@ -90,8 +90,7 @@ public class MailAppServerView extends JFrame implements Observer{
     public void update(Observable o, Object o1) {
         String logLine = (String)o1;
         logTextArea.append(logLine);
-        revalidate();
-        repaint();
+        logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
     }
                  
 }

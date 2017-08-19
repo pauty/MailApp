@@ -15,6 +15,9 @@ import mailapp.User;
  * @author pauty
  */
 public interface MailServer extends Remote{
+    public static String INBOX_FOLDERNAME = "inbox";
+    public static String SENT_FOLDERNAME = "sent";
+    public static String DELETED_FOLDERNAME = "deleted";
     
     public void sendMail(EMail mail) throws RemoteException;
     

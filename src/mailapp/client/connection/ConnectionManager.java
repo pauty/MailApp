@@ -5,6 +5,7 @@ import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,14 +25,12 @@ public class ConnectionManager extends Observable{
         OTHER_UPDATE,
         DISCONNECT
     }
-    public static String INBOX = "inbox"; 
-    public static String SENT = "sent"; 
-    public static String DELETED = "deleted"; 
-    private final static int DEFAULT_PULL_INTERVAL = 5000;
+ 
+    private final static int DEFAULT_PULL_INTERVAL = 8000;
     private final static int DEFAULT_SERVER_PORT = 6667;
     private final static String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
     private int pullInterval = DEFAULT_PULL_INTERVAL ;
-    private String[] folderNames = { INBOX , SENT, DELETED };
+    private String[] folderNames = { MailServer.INBOX_FOLDERNAME , MailServer.SENT_FOLDERNAME, MailServer.DELETED_FOLDERNAME };
     private int[] updatePattern = {0, 1, 0, 2};
     private int currentFolder = 0;
     private MailServer mailServer = null;
@@ -84,9 +83,9 @@ public class ConnectionManager extends Observable{
     
     public ConnectionManager(){
         listMap = new HashMap<String, List<EMail>>();
-        listMap.put("inbox", new ArrayList<EMail>());
-        listMap.put("sent", new ArrayList<EMail>());
-        listMap.put("deleted", new ArrayList<EMail>());     
+        listMap.put(MailServer.INBOX_FOLDERNAME, new ArrayList<EMail>());
+        listMap.put(MailServer.SENT_FOLDERNAME, new ArrayList<EMail>());
+        listMap.put(MailServer.DELETED_FOLDERNAME, new ArrayList<EMail>());     
     }
         
     public boolean connect(){
@@ -96,7 +95,7 @@ public class ConnectionManager extends Observable{
             mailServer = (MailServer)registry.lookup("MailServer");
         }
         catch(NotBoundException | RemoteException e){
-            System.out.println("Problema: " + e.getMessage());
+            System.out.println("Problem: " + e.getMessage());
             success = false;
         }
         if(success){
@@ -116,9 +115,9 @@ public class ConnectionManager extends Observable{
         }
         registry = null;
         mailServer = null;
-        listMap.get("inbox").clear();
-        listMap.get("sent").clear();
-        listMap.get("deleted").clear();
+        listMap.get(MailServer.INBOX_FOLDERNAME).clear();
+        listMap.get(MailServer.SENT_FOLDERNAME).clear();
+        listMap.get(MailServer.DELETED_FOLDERNAME).clear();
     }
     
     private synchronized void updateFolderMails(String folderName){
@@ -142,7 +141,7 @@ public class ConnectionManager extends Observable{
                 for(int i = 0; i < newList.size(); i++){
                     mailList.add(0 , newList.get(i));
                 }
-                if(folderName.equals(INBOX) && initDone){ //init update does not show dialog
+                if(folderName.equals(MailServer.INBOX_FOLDERNAME) && initDone){ //init update does not show dialog
                     newInboxMails = newList;
                     action = ConnectionManager.LastAction.INBOX_UPDATE;
                 }
@@ -156,6 +155,9 @@ public class ConnectionManager extends Observable{
                 for(int i = 0; i < toDelete.size(); i++){
                     mailList.remove(toDelete.get(i));
                 }
+                //if something was added, sort it
+                if(!newList.isEmpty())
+                    Collections.sort(mailList);
 
                 setChanged();
                 notifyObservers(action); //notify to the gui it's time to update
@@ -163,6 +165,9 @@ public class ConnectionManager extends Observable{
             } catch (RemoteException ex) {
                 System.out.println("ERROR get userinbox");
                 ex.printStackTrace();
+                disconnect();
+                setChanged();
+                notifyObservers(ConnectionManager.LastAction.DISCONNECT);
             }
         }     
     }
@@ -189,6 +194,9 @@ public class ConnectionManager extends Observable{
                 mailServer.sendMail(mail);   
             } catch (RemoteException ex) {
                 System.out.println("Error sending mail !!!");
+                disconnect();
+                setChanged();
+                notifyObservers( ConnectionManager.LastAction.DISCONNECT);
             }
         }
     }
@@ -204,6 +212,10 @@ public class ConnectionManager extends Observable{
                 mailServer.deleteFolderMails(currentUser, folderName, ids);
             } catch (RemoteException ex) {
                 System.out.println("Error deleting mail !!!");
+                disconnect();
+                setChanged();
+                notifyObservers( ConnectionManager.LastAction.DISCONNECT);
+                return;
             }
             
             //local remove and add to deleted folder
@@ -211,8 +223,11 @@ public class ConnectionManager extends Observable{
             for(int i = 0; i < mails.size(); i++){
                 mail = mails.get(i);
                 listMap.get(folderName).remove(mail);
-                if(!folderName.equals(DELETED))
-                    listMap.get(DELETED).add(i, mail);
+                if(!folderName.equals(MailServer.DELETED_FOLDERNAME))
+                    listMap.get(MailServer.DELETED_FOLDERNAME).add(mail);
+            }
+            if(!folderName.equals(MailServer.DELETED_FOLDERNAME)){
+                Collections.sort(listMap.get(MailServer.DELETED_FOLDERNAME));
             }
 
             setChanged();
@@ -232,7 +247,7 @@ public class ConnectionManager extends Observable{
         pullInterval = millisec;
     }
     
-    public List<EMail> getFolderMails(String folderName){
+    public synchronized List<EMail> getFolderMails(String folderName){
         return listMap.get(folderName);
     }
     
@@ -240,7 +255,7 @@ public class ConnectionManager extends Observable{
         return folderNames;
     }
     
-    public List<EMail> getNewInboxMails(){
+    public synchronized List<EMail> getNewInboxMails(){
         return newInboxMails;
     }
     

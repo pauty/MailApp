@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * @author pauty
  */
-public class EMail implements Serializable, Comparable{
+public class EMail implements Serializable, Comparable<EMail>{
     private int ID;
     private User sender;
     private ArrayList<User> receivers;
@@ -91,8 +91,7 @@ public class EMail implements Serializable, Comparable{
     
     //comparable by date
     @Override
-    public int compareTo(Object t) {        
-        EMail mail = (EMail)t;
+    public int compareTo(EMail mail) {
         return this.date.compareTo(mail.getDate());
     }
     
