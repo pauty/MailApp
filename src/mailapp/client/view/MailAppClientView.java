@@ -1,7 +1,12 @@
 
 package mailapp.client.view;
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.util.List;
 import java.util.Observable;
@@ -97,7 +102,7 @@ public class MailAppClientView extends JFrame{
     private void showNewMailMessageDialog(List<EMail> mails){
         String mailString = "";
         for(int i = 0; i < mails.size(); i++){
-            mailString += mails.get(i).getSender().getName() + " - " + mails.get(i).getSubject() + "\n";
+            mailString += mails.get(i).getSender().getName() + " - " + mails.get(i).getSubject() + "<br>";
         }
         //JOptionPane pane = new JOptionPane();
         //pane.cre
@@ -106,22 +111,36 @@ public class MailAppClientView extends JFrame{
                         "New Inbox Mails",
                          JOptionPane.INFORMATION_MESSAGE);
                          */
-        JOptionPane optionPane = new JOptionPane(
-                "The only way to close this dialog is by\n"
-                + "pressing one of the following buttons.\n"
-                + "Do you understand?",
-                JOptionPane.INFORMATION_MESSAGE);
-
-        final JDialog dialog = new JDialog(this, 
-                                     "Click a button",
-                                     false);
-        dialog.setContentPane(optionPane);
+        JDialog dialog = new JDialog(this, "New Mails");
+        dialog.setBounds(132, 132, 300, 200);
+        JLabel label = new JLabel("<html>You have new inbox mails: <br><br>" + mailString + "</html>");
+        //JLabel iconLabel = new JLabel();
+        //Icon icon = UIManager.getIcon("FileChooser.newFolderIcon");
+        //iconLabel.setIcon(icon);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        JButton button = new JButton("OK");
+        button.setHorizontalAlignment(SwingConstants.CENTER);
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();   
+            }
+        });
+        Container contentPane = dialog.getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(label, BorderLayout.CENTER);
+        //contentPane.add(iconLabel, BorderLayout.WEST);
+        JPanel p2 = new JPanel();
+        p2.add(button);
+        contentPane.add(p2, BorderLayout.SOUTH);
         
         dialog.pack();
+        dialog.setLocationRelativeTo(null);
+        dialog.setSize(250,150);
+        dialog.setMinimumSize(new Dimension(250,150));
         dialog.setVisible(true);
     }
     
-    //for swithing panels usage only
+    //for swithing panels' controllers usage only
     ConnectionManager getConnectionManager(){
         return connectionManager;
     }

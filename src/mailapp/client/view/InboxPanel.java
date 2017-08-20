@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Rectangle;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -83,7 +84,12 @@ public class InboxPanel extends JPanel{
                 return;
             }  
             int index = mailList.locationToIndex(me.getPoint());
-            if(mailList.getCellBounds(index, index).contains(me.getPoint()) && index == previousSelectedIndex){
+            Rectangle cellBounds = mailList.getCellBounds(index, index);
+            if(cellBounds == null){
+                previousSelectedIndex = -2;
+                mailList.clearSelection();
+            }
+            else if(cellBounds.contains(me.getPoint()) && index == previousSelectedIndex){
                 parentFrame.showMailReaderPanel(listModel.get(index));
             }
             else{
