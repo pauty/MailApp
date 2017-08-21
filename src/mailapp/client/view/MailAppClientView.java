@@ -13,6 +13,8 @@ import java.util.Observable;
 import java.util.Observer;
 import mailapp.EMail;
 import mailapp.client.connection.ConnectionManager;
+import mailapp.client.connection.ConnectionManagerMessage;
+import mailapp.server.MailServer;
 
 /**
  *
@@ -31,17 +33,21 @@ public class MailAppClientView extends JFrame{
 
         @Override
         public void update(Observable o, Object o1) {
-            ConnectionManager.LastAction action = (ConnectionManager.LastAction)o1;
-            if(action.equals(ConnectionManager.LastAction.INBOX_UPDATE)){
-                List<EMail> newMails = connectionManager.getNewInboxMails();
-                if(!newMails.isEmpty())
-                    showNewMailMessageDialog(newMails);
-                inboxPanel.updateFolderMails();
+            ConnectionManagerMessage msg = (ConnectionManagerMessage)o1;
+            
+            if(msg.getType() == ConnectionManagerMessage.Type.MAIL_FOLDER_UPDATE){
+                //check if updated folder was inbox, to show new mail notification
+                if(msg.getUpdatedFolderName().equals(MailServer.INBOX_FOLDERNAME)){
+                    List<EMail> newMails = connectionManager.getNewInboxMails();
+                    if(!newMails.isEmpty())
+                        showNewMailMessageDialog(newMails);
+                }
+                //we update te view list only if it is the currently displayed list
+                if(msg.getUpdatedFolderName().equals(inboxPanel.getCurrentFolderName())){
+                    inboxPanel.updateFolderMails();
+                }
             }
-            else if(action.equals(ConnectionManager.LastAction.OTHER_UPDATE)){
-                inboxPanel.updateFolderMails();
-            }
-            else if(action.equals(ConnectionManager.LastAction.DISCONNECT)){
+            else if(msg.getType() == ConnectionManagerMessage.Type.DISCONNECT){
                 userSelectionPanel.setErrorMessage("ERROR - Lost connection to server.");
                 showUserSelectionPanel();
             }

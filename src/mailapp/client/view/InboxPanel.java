@@ -180,6 +180,10 @@ public class InboxPanel extends JPanel{
         welcomeLabel.setText("<html>Welcome back,<br>" + u.getName() +"</html>");
     }
     
+    public String getCurrentFolderName(){
+        return (String)folderComboBox.getSelectedItem();
+    }
+    
     public synchronized void updateFolderMails(){
         previousSelectedIndex = -2;
         //this.mailList.clearSelection();

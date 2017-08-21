@@ -22,6 +22,7 @@
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/task/DeleteFolderMailsTask.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/UserSelectionPanel.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/ServerMessage.java</file>
+            <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/connection/ConnectionManagerMessage.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/client/view/MailWriterPanel.java</file>
             <file>file:/home/pauty/NetBeansProjects/MailApp/src/mailapp/server/MailAppServer.java</file>
         </group>

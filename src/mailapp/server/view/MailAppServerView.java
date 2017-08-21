@@ -88,9 +88,18 @@ public class MailAppServerView extends JFrame implements Observer{
     //handle the log updates
     @Override
     public void update(Observable o, Object o1) {
-        String logLine = (String)o1;
-        logTextArea.append(logLine);
-        logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
+        //log update done by swing event queue
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run(){
+                String logLine = (String)o1;
+                logTextArea.append(logLine);
+                logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
+                revalidate();
+                repaint();
+            }
+        });
+        
     }
                  
 }

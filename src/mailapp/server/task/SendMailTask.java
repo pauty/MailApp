@@ -18,40 +18,40 @@ import mailapp.User;
 import mailapp.server.FileLocker;
 
 public class SendMailTask implements Runnable{
-        EMail toSend;
-        public SendMailTask(EMail mail){
-            toSend = mail;
-        }
-
-        @Override
-        public void run() {
-            File file = null; 
-            PrintWriter out = null; 
-            Lock lock = null;
-            String folderName = "inbox";
-            ArrayList<User> receivers = toSend.getReceivers();
-            for(int i = 0; i < receivers.size(); i++){
-                try {
-                    file = new File("users/" + receivers.get(i).getAddress().replace("@mailapp.com","") + "/" + folderName +".txt");
-                    if(!file.exists()) {
-                        file.createNewFile();
-                    }
-                    out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-                    lock = (FileLocker.getInstance().getLockForUser(receivers.get(i).getAddress()+ "-" + folderName)).writeLock();
-                    lock.lock();
-                    out.println(toSend.getID());
-                }
-                catch(FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } 
-                finally {
-                    if(lock != null)
-                        lock.unlock();
-                    if(out != null)
-                        out.close();
-                }
-            }
-        }  
+    EMail toSend;
+    public SendMailTask(EMail mail){
+        toSend = mail;
     }
+
+    @Override
+    public void run() {
+        File file = null; 
+        PrintWriter out = null; 
+        Lock lock = null;
+        String folderName = "inbox";
+        ArrayList<User> receivers = toSend.getReceivers();
+        for(int i = 0; i < receivers.size(); i++){
+            try {
+                file = new File("users/" + receivers.get(i).getAddress().replace("@mailapp.com","") + "/" + folderName +".txt");
+                if(!file.exists()) {
+                    file.createNewFile();
+                }
+                out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+                lock = (FileLocker.getInstance().getLockForUser(receivers.get(i).getAddress()+ "-" + folderName)).writeLock();
+                lock.lock();
+                out.println(toSend.getID());
+            }
+            catch(FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } 
+            finally {
+                if(lock != null)
+                    lock.unlock();
+                if(out != null)
+                    out.close();
+            }
+        }
+    }  
+}

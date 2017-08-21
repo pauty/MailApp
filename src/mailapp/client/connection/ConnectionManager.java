@@ -20,11 +20,6 @@ import mailapp.server.MailServer;
  * @author pauty
  */ 
 public class ConnectionManager extends Observable{
-    public enum LastAction{
-        INBOX_UPDATE,
-        OTHER_UPDATE,
-        DISCONNECT
-    }
  
     private final static int DEFAULT_PULL_INTERVAL = 8000;
     private final static int DEFAULT_SERVER_PORT = 6667;
@@ -126,7 +121,6 @@ public class ConnectionManager extends Observable{
         System.out.println("client asking for inbox");
         
         if(mailServer != null && currentUser != null){
-            ConnectionManager.LastAction action = ConnectionManager.LastAction.OTHER_UPDATE;
             
             ArrayList<Integer> pulledIDs = new ArrayList<Integer>();
             List<EMail> mailList = listMap.get(folderName);
@@ -143,7 +137,6 @@ public class ConnectionManager extends Observable{
                 }
                 if(folderName.equals(MailServer.INBOX_FOLDERNAME) && initDone){ //init update does not show dialog
                     newInboxMails = newList;
-                    action = ConnectionManager.LastAction.INBOX_UPDATE;
                 }
                 
                 ArrayList<Integer> remoteIDs = (ArrayList<Integer>) msg.getFolderIDList();
@@ -160,14 +153,14 @@ public class ConnectionManager extends Observable{
                     Collections.sort(mailList);
 
                 setChanged();
-                notifyObservers(action); //notify to the gui it's time to update
+                notifyObservers(new ConnectionManagerMessage(folderName)); //notify to the gui it's time to update
                 
             } catch (RemoteException ex) {
                 System.out.println("ERROR get userinbox");
                 ex.printStackTrace();
                 disconnect();
                 setChanged();
-                notifyObservers(ConnectionManager.LastAction.DISCONNECT);
+                notifyObservers(new ConnectionManagerMessage());
             }
         }     
     }
@@ -196,7 +189,7 @@ public class ConnectionManager extends Observable{
                 System.out.println("Error sending mail !!!");
                 disconnect();
                 setChanged();
-                notifyObservers( ConnectionManager.LastAction.DISCONNECT);
+                notifyObservers(new ConnectionManagerMessage());
             }
         }
     }
@@ -214,7 +207,7 @@ public class ConnectionManager extends Observable{
                 System.out.println("Error deleting mail !!!");
                 disconnect();
                 setChanged();
-                notifyObservers( ConnectionManager.LastAction.DISCONNECT);
+                notifyObservers(new ConnectionManagerMessage());
                 return;
             }
             
@@ -231,7 +224,7 @@ public class ConnectionManager extends Observable{
             }
 
             setChanged();
-            notifyObservers(LastAction.OTHER_UPDATE);    
+            notifyObservers(new ConnectionManagerMessage(folderName));    
         }
     }
     

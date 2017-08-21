@@ -19,48 +19,48 @@ import mailapp.server.MailFileHandler;
 import mailapp.server.ServerMessage;
 
 public class ReadFolderMailsTask implements Callable<ServerMessage>{
-        User user;
-        String folderName;
-        List<Integer> alreadyPulled;
-        public ReadFolderMailsTask(User u, String folder, List<Integer> pulled){
-            user = u;
-            folderName = folder;  
-            alreadyPulled = new ArrayList<Integer>(pulled);
-        }
+    User user;
+    String folderName;
+    List<Integer> alreadyPulled;
+    public ReadFolderMailsTask(User u, String folder, List<Integer> pulled){
+        user = u;
+        folderName = folder;  
+        alreadyPulled = new ArrayList<Integer>(pulled);
+    }
 
-        @Override
-        public ServerMessage call() {
-            File file = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".txt");
-            Scanner scan = null;
-            ArrayList<EMail> mailList = new ArrayList<EMail>();
-            ArrayList<Integer> idList = new ArrayList<Integer>();
-            int mailID;
-            EMail mail;
+    @Override
+    public ServerMessage call() {
+        File file = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".txt");
+        Scanner scan = null;
+        ArrayList<EMail> mailList = new ArrayList<EMail>();
+        ArrayList<Integer> idList = new ArrayList<Integer>();
+        int mailID;
+        EMail mail;
+        try {
+            scan = new Scanner(file);
+            Lock lock = (FileLocker.getInstance().getLockForUser(user.getAddress()+ "-" + folderName)).readLock();
+            lock.lock();
             try {
-                scan = new Scanner(file);
-                Lock lock = (FileLocker.getInstance().getLockForUser(user.getAddress()+ "-" + folderName)).readLock();
-                lock.lock();
-                try {
-                    while(scan.hasNextInt()) {
-                        mailID = scan.nextInt();
-                        idList.add(mailID);
-                        if(!alreadyPulled.contains(mailID)){
-                            mail = MailFileHandler.openMail(mailID);
-                            mailList.add(mail);
-                        }     
-                    }      
-                } 
-                finally {
-                    lock.unlock();
-                }
-            } 
-            catch(FileNotFoundException e) {
-                e.printStackTrace();
+                while(scan.hasNextInt()) {
+                    mailID = scan.nextInt();
+                    idList.add(mailID);
+                    if(!alreadyPulled.contains(mailID)){
+                        mail = MailFileHandler.openMail(mailID);
+                        mailList.add(mail);
+                    }     
+                }      
             } 
             finally {
-                if(scan != null)
-                    scan.close();
+                lock.unlock();
             }
-            return new ServerMessage(mailList, idList);
+        } 
+        catch(FileNotFoundException e) {
+            e.printStackTrace();
+        } 
+        finally {
+            if(scan != null)
+                scan.close();
         }
+        return new ServerMessage(mailList, idList);
     }
+}

@@ -134,15 +134,26 @@ public class MailServerImpl implements MailServer{
     }
     
     @Override
-    public void deleteFolderMails(User user, String folderName, List<Integer> toDelete){      
-        Runnable deleteTask = new DeleteFolderMailsTask(user, folderName, toDelete);
+    public void deleteFolderMails(User user, String folderName, List<Integer> toDelete){
+        FutureTask<List<Integer>> deleteTask = new FutureTask<>(new DeleteFolderMailsTask(user, folderName, toDelete));
         exec.execute(deleteTask);
-        if(!folderName.equals(DELETED_FOLDERNAME)){
-            Runnable addTask = new AddFolderMailsTask(user, DELETED_FOLDERNAME, toDelete);
-            exec.execute(addTask);
-        }  
-        logUpdater.updateLog("> Deleting "+ toDelete.size() + "mail(s) from " + user.getAddress() + "  \"" + folderName + "\" folder.\n");
-
+        //since concurrent deletion can happen in different clients,
+        //we must know what mails we actually deleted to avoid adding duplicated ids in delete list
+        List<Integer> actuallyDeleted;
+        try {
+            logUpdater.updateLog("> Deleting "+ toDelete.size() + "mail(s) from " + user.getAddress() + "  \"" + folderName + "\" folder.\n");
+            actuallyDeleted = deleteTask.get();
+            if(!folderName.equals(DELETED_FOLDERNAME) && !actuallyDeleted.isEmpty()){
+                Runnable addTask = new AddFolderMailsTask(user, DELETED_FOLDERNAME, actuallyDeleted);
+             exec.execute(addTask);
+            } 
+        } catch (InterruptedException ex) { 
+            System.out.println("Interrupred exception in getUserInbox");
+            logUpdater.updateLog("> !! ERROR - Interrupted while deleting from \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
+        } catch (ExecutionException ex) {
+             System.out.println("execution exception in getUserInbox");
+             logUpdater.updateLog("> !! ERROR - Exception while deleting from \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
+        }
     }
     
     private EMail createErrorMail(EMail mail, List<User> invalidReceivers){
