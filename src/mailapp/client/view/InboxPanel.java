@@ -185,38 +185,30 @@ public class InboxPanel extends JPanel{
     }
     
     public synchronized void updateFolderMails(){
-        previousSelectedIndex = -2;
-        //this.mailList.clearSelection();
-        
         //the list model must be updated by swing event queue
         SwingUtilities.invokeLater(new Runnable() {           
             @Override
             public void run(){
                 String folder = (String)folderComboBox.getSelectedItem();
                 List<EMail> mails = parentFrame.getConnectionManager().getFolderMails(folder);
-
+                
+                //Note: add happens in reverse order: newer mails are on top (lower list index)
+                if(mails.size() == listModel.size()){
+                    boolean modified = false;
+                    for(int i = 0; !modified && i < mails.size(); i++){
+                        if(!mails.get(i).equals(listModel.get(listModel.size() - 1 - i)))
+                            modified = true;
+                    }
+                    if(!modified)
+                        return;
+                }
+                
+                previousSelectedIndex = -2;
                 listModel.clear();
                 for(int i = mails.size() - 1; i >= 0; i--){
                     listModel.addElement(mails.get(i));
                 }
             }
-        });
-        /*
-        ArrayList<EMail> toDelete = new ArrayList<EMail>();
-        //remove mails no longer present in remote inbox (delete)
-        for(int i = 0; i < listModel.size(); i++){
-            if(!mails.contains(listModel.get(i)))
-                toDelete.add(listModel.get(i));
-        }
-        for(int i = 0; i < toDelete.size(); i++){
-            listModel.removeElement(toDelete.get(i));
-        }
-        //add new mails not yet listed in local inbox (update)
-        for(int i = 0; i < mails.size(); i++){
-            if(!listModel.contains(mails.get(i))){
-                listModel.e(i, mails.get(i));
-            }
-        }*/  
-        
+        });       
     }
 }

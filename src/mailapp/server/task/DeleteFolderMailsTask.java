@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
-import mailapp.EMail;
 import mailapp.User;
 import mailapp.server.FileLocker;
 

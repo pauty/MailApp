@@ -53,7 +53,7 @@ public class MailAppServerView extends JFrame implements Observer{
     public MailAppServerView(MailServerImpl s) {
         logScrollPane = new JScrollPane();
         buttonsPanel = new JPanel();
-        logTextArea = new JTextArea(" \n");
+        logTextArea = new JTextArea("> Server application is ready. Please click on start button to set up the server.\n");
         startButton = new JButton("Start");
         exitButton = new JButton("Exit");
 
