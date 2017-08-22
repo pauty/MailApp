@@ -157,7 +157,7 @@ public class ConnectionManager extends Observable{
                 
             } catch (RemoteException ex) {
                 System.out.println("ERROR get userinbox");
-                ex.printStackTrace();
+                //ex.printStackTrace();
                 disconnect();
                 setChanged();
                 notifyObservers(new ConnectionManagerMessage());
