@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.*;
 import java.util.List;
 import java.util.Observable;
@@ -59,9 +61,7 @@ public class MailAppClientView extends JFrame{
         connectionManager = cm;
         connectionManager.addObserver(new ConnectionManagerObserver());
         
-        //init GUI
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        
+        //init GUI        
         getContentPane().setLayout(new CardLayout());
         
         //create user selection panel
@@ -82,6 +82,18 @@ public class MailAppClientView extends JFrame{
         this.setSize(800, 500);
         this.setMinimumSize(new Dimension(500,400));
         this.setTitle("MailApp Client");
+        
+        //set close operation
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                if(connectionManager != null)
+                    connectionManager.disconnect();
+                dispose();
+                System.out.println("exiting client");
+            }
+        });
     }
 
     

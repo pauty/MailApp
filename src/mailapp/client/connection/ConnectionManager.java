@@ -118,7 +118,7 @@ public class ConnectionManager extends Observable{
     private synchronized void updateFolderMails(String folderName){
         ServerMessage msg = null;
 
-        System.out.println("client asking for inbox");
+        System.out.println("client asking for " + folderName);
         
         if(mailServer != null && currentUser != null){
             
