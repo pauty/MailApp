@@ -1,0 +1,34 @@
+
+------- Execution started: Tue Sep 05 14:17:34 CEST 2017 -------
+
+> Starting mail server...
+> Initializing next mail ID... DONE.
+> Setting up connection... DONE.
+> Update "inbox" folder request from user turing@mailapp.com successfully completed.
+> Update "sent" folder request from user turing@mailapp.com successfully completed.
+> Update "deleted" folder request from user turing@mailapp.com successfully completed.
+> Update "inbox" folder request from user turing@mailapp.com successfully completed.
+> Update "sent" folder request from user turing@mailapp.com successfully completed.
+> Update "inbox" folder request from user turing@mailapp.com successfully completed.
+> Update "inbox" folder request from user dijkstra@mailapp.com successfully completed.
+> Update "sent" folder request from user dijkstra@mailapp.com successfully completed.
+> Update "deleted" folder request from user dijkstra@mailapp.com successfully completed.
+> Update "deleted" folder request from user turing@mailapp.com successfully completed.
+> Update "inbox" folder request from user dijkstra@mailapp.com successfully completed.
+> Update "inbox" folder request from user turing@mailapp.com successfully completed.
+> Update "sent" folder request from user dijkstra@mailapp.com successfully completed.
+> Update "sent" folder request from user turing@mailapp.com successfully completed.
+> Update "inbox" folder request from user dijkstra@mailapp.com successfully completed.
+> Sending Email #30; sender: dijkstra@mailapp.com
+> Update "inbox" folder request from user turing@mailapp.com successfully completed.
+> Update "deleted" folder request from user dijkstra@mailapp.com successfully completed.
+> Update "deleted" folder request from user turing@mailapp.com successfully completed.
+> Update "inbox" folder request from user dijkstra@mailapp.com successfully completed.
+
+> Server started shutdown procedure.
+> Closing connection... DONE.
+> Waiting for tasks to complete...  DONE.
+> Shutting down task executor... DONE.
+> Next mail ID 31 saved on file successfully.
+
+-------  Execution ended. ------- 

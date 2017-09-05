@@ -15,6 +15,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import mailapp.User;
 import mailapp.server.FileLocker;
+import mailapp.server.MailServerImpl;
 
 /**
  *
@@ -33,8 +34,8 @@ public class DeleteFolderMailsTask implements Callable<List<Integer>>{
 
     @Override
     public List<Integer> call() {
-        File filein = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".txt");
-        File fileout = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".tmp");
+        File filein = new File(MailServerImpl.USER_DIR +  MailServerImpl.getUserDirectoryName(user) + folderName + ".txt");
+        File fileout = new File(MailServerImpl.USER_DIR +  MailServerImpl.getUserDirectoryName(user) + folderName + ".tmp");
         Scanner scanner = null;
         PrintWriter writer = null;
         int mailID;

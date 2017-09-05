@@ -16,6 +16,7 @@ import mailapp.EMail;
 import mailapp.User;
 import mailapp.server.FileLocker;
 import mailapp.server.MailFileHandler;
+import mailapp.server.MailServerImpl;
 import mailapp.server.ServerMessage;
 
 public class ReadFolderMailsTask implements Callable<ServerMessage>{
@@ -30,7 +31,7 @@ public class ReadFolderMailsTask implements Callable<ServerMessage>{
 
     @Override
     public ServerMessage call() {
-        File file = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".txt");
+        File file = new File(MailServerImpl.USER_DIR +  MailServerImpl.getUserDirectoryName(user) + folderName + ".txt");
         Scanner scan = null;
         ArrayList<EMail> mailList = new ArrayList<EMail>();
         ArrayList<Integer> idList = new ArrayList<Integer>();

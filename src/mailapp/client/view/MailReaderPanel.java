@@ -10,9 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import mailapp.User;
 
 public class MailReaderPanel extends javax.swing.JPanel {

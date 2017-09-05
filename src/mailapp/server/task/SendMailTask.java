@@ -16,6 +16,7 @@ import java.util.concurrent.locks.Lock;
 import mailapp.EMail;
 import mailapp.User;
 import mailapp.server.FileLocker;
+import mailapp.server.MailServerImpl;
 
 public class SendMailTask implements Runnable{
     EMail toSend;
@@ -32,7 +33,7 @@ public class SendMailTask implements Runnable{
         ArrayList<User> receivers = toSend.getReceivers();
         for(int i = 0; i < receivers.size(); i++){
             try {
-                file = new File("users/" + receivers.get(i).getAddress().replace("@mailapp.com","") + "/" + folderName +".txt");
+                file = new File(MailServerImpl.USER_DIR +  MailServerImpl.getUserDirectoryName(receivers.get(i)) + folderName +".txt");
                 if(!file.exists()) {
                     file.createNewFile();
                 }

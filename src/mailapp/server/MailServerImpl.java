@@ -1,8 +1,11 @@
 
 package mailapp.server;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -34,6 +37,15 @@ public class MailServerImpl implements MailServer{
     private static int nextMailID;
     private LogUpdater logUpdater;
     private Registry registry;
+    private PrintWriter logWriter;
+    //paths
+    public static final String MAIN_DIR = "serverfiles/";
+    public static final String USER_DIR = MAIN_DIR + "users/";
+    public static final String MAIL_DIR = MAIN_DIR + "mails/";
+    public static final String LOG_PATH = MAIN_DIR + "log.txt";
+    public static final String MAILID_PATH = MAIN_DIR + "mailID.txt";
+    public static final String DOMAIN = "mailapp.com";
+    
     
     private class LogUpdater extends Observable{
         public void updateLog(String s){
@@ -42,39 +54,60 @@ public class MailServerImpl implements MailServer{
         }
     }
     
-    public MailServerImpl() throws RemoteException {
+    public MailServerImpl(){
         super();
         logUpdater = new LogUpdater();  
+        logWriter = null;
+          
+    }
+    
+    public static String getUserDirectoryName(User user){
+        return user.getAddress().replace("@" + DOMAIN,"") + "/";
     }
     
     public boolean start(){ 
-        logUpdater.updateLog("> Starting mail server...\n");
         
-        exec = Executors.newFixedThreadPool(NUM_THREADS);
+        //try open log file
+        try{
+            File logFile = new File(LOG_PATH);
+            if(!logFile.exists())
+                logFile.createNewFile();
+            logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logFile, true)));
+            logWriter.println("\n------- Execution started: " + new Date().toString() + " -------\n");
+        } catch (IOException e) {
+            logWriter = null; //cannot use log file, proceed
+            e.printStackTrace();
+        }
         
-        File file = new File("settings/mailID.txt");
+        writeLog("> Starting mail server...\n"); 
+        //note: any error from now on means erroneous startup
+        
+        //try to open next mail id
+        File file = new File(MAILID_PATH);
         try {
-            logUpdater.updateLog("> Initializing next mail ID...");
+            writeLog("> Initializing next mail ID...");
             Scanner scan = new Scanner(file);
             nextMailID = scan.nextInt();
             scan.close();
-            logUpdater.updateLog(" DONE.\n");
+            writeLog(" DONE.\n");
         } catch (FileNotFoundException ex) {
-            logUpdater.updateLog("\n> !! ERROR - Could not open file: "+ file.getName() + "\n");
+            writeLog("\n> !! ERROR - Could not open file: "+ file.getName() + "\n");
             return false;
         }
        
         try {
-            logUpdater.updateLog("> Setting up connection...");
-            MailServer stub = (MailServer) UnicastRemoteObject.exportObject(this, 6667);
+            writeLog("> Setting up connection...");
+            MailServer remoteObj = (MailServer) UnicastRemoteObject.exportObject(this, 6667);
             registry = LocateRegistry.createRegistry(6667);
-            registry.rebind("MailServer", stub); 
-            logUpdater.updateLog(" DONE.\n");
+            registry.rebind("MailServer", remoteObj); 
+            writeLog(" DONE.\n");
         } catch (RemoteException e) {
-            logUpdater.updateLog("\n> !! ERROR - Remote exception occurred while exporting RMI object.\nCould not start server.\n");
+            writeLog("\n> !! ERROR - Remote exception occurred while exporting RMI object.\nCould not start server.\n");
             e.printStackTrace();
             return false;
         }
+        
+        exec = Executors.newFixedThreadPool(NUM_THREADS);
         
         return true;
     }
@@ -86,13 +119,13 @@ public class MailServerImpl implements MailServer{
         ServerMessage res = null;
         try {
             res = ft.get();
-            logUpdater.updateLog("> Update \"" + folderName + "\" folder request from user "+user.getAddress() + " successfully completed.\n");
+            writeLog("> Update \"" + folderName + "\" folder request from user "+user.getAddress() + " successfully completed.\n");
         } catch (InterruptedException ex) { 
             System.out.println("Interrupred exception in getUserInbox");
-            logUpdater.updateLog("> !! ERROR - Interrupted while updating \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
+            writeLog("> !! ERROR - Interrupted while updating \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
         } catch (ExecutionException ex) {
              System.out.println("execution exception in getUserInbox");
-             logUpdater.updateLog("> !! ERROR - Exception while updating \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
+             writeLog("> !! ERROR - Exception while updating \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
         }
         
         return res;
@@ -106,7 +139,7 @@ public class MailServerImpl implements MailServer{
         File file;
         
         for(int i = 0; i < receivers.size(); i++){
-            file = new File("users/" + receivers.get(i).getAddress().replace("@mailapp.com", ""));
+            file = new File(MailServerImpl.USER_DIR +  MailServerImpl.getUserDirectoryName(receivers.get(i)));
             if(!(file.exists() && file.isDirectory()))
                 invalidReceivers.add(receivers.get(i));
         }
@@ -122,13 +155,13 @@ public class MailServerImpl implements MailServer{
         Runnable sendTask;
         if(invalidReceivers.isEmpty()){  
             sendTask = new SendMailTask(mail);  
-            logUpdater.updateLog("> Sending Email #" + mail.getID() + "; sender: "+ mail.getSender().getAddress() + "\n");
+            writeLog("> Sending Email #" + mail.getID() + "; sender: "+ mail.getSender().getAddress() + "\n");
         }
         else{
             EMail errorMail = createErrorMail(mail, invalidReceivers);
             MailFileHandler.saveMail(errorMail);
             sendTask = new SendMailTask(errorMail);
-            logUpdater.updateLog("> !! ERROR - Could not send Email #" + mail.getID() + " due to invalid receiver address\n");
+            writeLog("> !! ERROR - Could not send Email #" + mail.getID() + " due to invalid receiver address\n");
         }
         exec.execute(sendTask);  
     }
@@ -141,7 +174,7 @@ public class MailServerImpl implements MailServer{
         //we must know what mails we actually deleted to avoid adding duplicated ids in delete list
         List<Integer> actuallyDeleted;
         try {
-            logUpdater.updateLog("> Deleting "+ toDelete.size() + "mail(s) from " + user.getAddress() + "  \"" + folderName + "\" folder.\n");
+            writeLog("> Deleting "+ toDelete.size() + "mail(s) from " + user.getAddress() + "  \"" + folderName + "\" folder.\n");
             actuallyDeleted = deleteTask.get();
             if(!folderName.equals(DELETED_FOLDERNAME) && !actuallyDeleted.isEmpty()){
                 Runnable addTask = new AddFolderMailsTask(user, DELETED_FOLDERNAME, actuallyDeleted);
@@ -149,12 +182,13 @@ public class MailServerImpl implements MailServer{
             } 
         } catch (InterruptedException ex) { 
             System.out.println("Interrupred exception in getUserInbox");
-            logUpdater.updateLog("> !! ERROR - Interrupted while deleting from \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
+            writeLog("> !! ERROR - Interrupted while deleting from \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
         } catch (ExecutionException ex) {
              System.out.println("execution exception in getUserInbox");
-             logUpdater.updateLog("> !! ERROR - Exception while deleting from \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
+             writeLog("> !! ERROR - Exception while deleting from \"" + folderName + "\" folder, user: "+user.getAddress() + "\n");
         }
     }
+    
     
     private EMail createErrorMail(EMail mail, List<User> invalidReceivers){
         User sender = new User("Server Error Message", " ");
@@ -184,6 +218,15 @@ public class MailServerImpl implements MailServer{
         logUpdater.addObserver(o);
     }
     
+    private void writeLog(String s){
+        //write on file
+        if(logWriter != null){
+            logWriter.print(s);
+        }
+        //show on GUI
+        logUpdater.updateLog(s);       
+    }
+    
     private static synchronized void setMailID(EMail mail){
         mail.setID(nextMailID);
         nextMailID++;
@@ -191,61 +234,67 @@ public class MailServerImpl implements MailServer{
     
     public boolean shutdown(){
         boolean success = true;
-        logUpdater.updateLog("\n> Server started shutdown procedure.\n");
+        writeLog("\n> Server started shutdown procedure.\n");
         //close the connection    
         try {
-            logUpdater.updateLog("> Closing connection...");
+            writeLog("> Closing connection...");
             registry.unbind("MailServer");
             UnicastRemoteObject.unexportObject(this, true);
             UnicastRemoteObject.unexportObject(registry, true);
-            logUpdater.updateLog(" DONE.\n");
+            writeLog(" DONE.\n");
         } catch (RemoteException ex) {
-            logUpdater.updateLog("\n> !! ERROR - Remote exception occurred while unexporting RMI server.\n");
+            writeLog("\n> !! ERROR - Remote exception occurred while unexporting RMI server.\n");
             ex.printStackTrace();
             success = false;
         } catch (NotBoundException ex) {
-            logUpdater.updateLog("\n> !! ERROR - NotBoundException occurred while unexporting RMI server.\n");
+            writeLog("\n> !! ERROR - NotBoundException occurred while unexporting RMI server.\n");
             ex.printStackTrace();
             success = false;
         }   
         
         try {
-            logUpdater.updateLog("> Waiting for tasks to complete... ");
+            writeLog("> Waiting for tasks to complete... ");
             Thread.sleep(2000); //wait for tasks to complete
-            logUpdater.updateLog(" DONE.\n");
+            writeLog(" DONE.\n");
         } catch (InterruptedException ex) {
             ex.printStackTrace();
             success = false;
-            logUpdater.updateLog("\n> !! ERROR - Interrupted exception occurred while waiting for tasks to complete.\n");
+            writeLog("\n> !! ERROR - Interrupted exception occurred while waiting for tasks to complete.\n");
         }
         
         //do not accept new task requests
         exec.shutdown();
         try {
-            logUpdater.updateLog("> Shutting down task executor...");
+            writeLog("> Shutting down task executor...");
             exec.awaitTermination(2000, TimeUnit.MILLISECONDS);
-            logUpdater.updateLog(" DONE.\n");
+            writeLog(" DONE.\n");
         } catch (InterruptedException ex) {
-            logUpdater.updateLog("\n> !! ERROR - Interrupted exception occurred while shutting down task executor.\n");
+            writeLog("\n> !! ERROR - Interrupted exception occurred while shutting down task executor.\n");
             ex.printStackTrace(); 
             success = false;
         }
         
         //save the current mail ID
-        File file = new File("settings/mailID.txt");
+        File file = new File(MAILID_PATH);
         try {
             PrintWriter out = new PrintWriter(file);
             out.println("" + nextMailID);
             out.close();
             success = true;
-            logUpdater.updateLog("> Next mail ID "+ nextMailID + " saved on file successfully.\n");
+            writeLog("> Next mail ID "+ nextMailID + " saved on file successfully.\n");
         } catch (FileNotFoundException ex) {
             success = false;
-            logUpdater.updateLog("> !! ERROR - Could not locate file for saving next mail ID: "+ nextMailID +"\n");
+            writeLog("> !! ERROR - Could not locate file for saving next mail ID: "+ nextMailID +"\n");
         }
         
         if(success)
             logUpdater.updateLog("\n> Server was shut down successfully. Please clik exit again to close application.\n\n");
+
+        //close log output file
+        if(logWriter != null){
+            logWriter.println("\n-------  Execution ended. ------- ");
+            logWriter.close();
+        }
         
         return success;
     }

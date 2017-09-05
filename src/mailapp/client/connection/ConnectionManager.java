@@ -40,6 +40,7 @@ public class ConnectionManager extends Observable{
     private class MailPullLoop implements Runnable{
         private volatile boolean isRunning = true;
         private final Object lockObj = new Object();
+        
         @Override
         public void run(){
             while(isRunning){
@@ -95,7 +96,9 @@ public class ConnectionManager extends Observable{
         }
         if(success){
             pullLoop = new MailPullLoop();
-            new Thread(pullLoop).start();
+            Thread t = new Thread(pullLoop);
+            t.setDaemon(true);
+            t.start();
         }
         initDone = false;
         currentFolder = 0;

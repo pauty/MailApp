@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import mailapp.User;
 import mailapp.server.FileLocker;
+import mailapp.server.MailServerImpl;
 
 public class AddFolderMailsTask implements Runnable{
     User user;
@@ -25,7 +26,7 @@ public class AddFolderMailsTask implements Runnable{
 
     @Override
     public void run() {
-        File file = new File("users/" + user.getAddress().replace("@mailapp.com","") + "/" + folderName + ".txt");
+        File file = new File(MailServerImpl.USER_DIR +  MailServerImpl.getUserDirectoryName(user) + folderName + ".txt");
         PrintWriter out = null;
         try {
             if(!file.exists()){

@@ -25,13 +25,13 @@ import mailapp.User;
  * @author pauty
  */
 public class MailFileHandler {
-    private final static String PATH = "mails/";
+    private final static String PATH = MailServerImpl.MAIL_DIR;
     private final static String EXTENSION = ".txt";
     private final static String FORMAT_STRING = "dd/MM/yyyy HH:mm:ss";
     private final static DateFormat formatter = new SimpleDateFormat(FORMAT_STRING);
     
     public static EMail openMail(int mailID){
-        File file = new File(PATH + mailID + ".txt");
+        File file = new File(PATH + mailID + EXTENSION);
         Scanner in = null;
         try {
             in = new Scanner(file);
@@ -79,7 +79,7 @@ public class MailFileHandler {
     }
     
     public static void saveMail(EMail mail){
-        File file = new File(PATH + mail.getID() + ".txt");
+        File file = new File(PATH + mail.getID() + EXTENSION);
         PrintWriter out = null;
         try {
             out = new PrintWriter(new BufferedWriter(new FileWriter(file, false)));

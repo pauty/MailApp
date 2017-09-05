@@ -17,7 +17,6 @@ public class MailAppServer {
      */
     public static void main(String args[]) {
         
-        try{
            //create and start the server
            MailServerImpl server;
            server = new MailServerImpl();
@@ -25,9 +24,5 @@ public class MailAppServer {
            MailAppServerView view = new MailAppServerView(server);
            view.setVisible(true);
 
-        }
-        catch(RemoteException e) {
-            e.printStackTrace();
-        }
     }
 }
