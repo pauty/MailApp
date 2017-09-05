@@ -97,7 +97,6 @@ public class ConnectionManager extends Observable{
         if(success){
             pullLoop = new MailPullLoop();
             Thread t = new Thread(pullLoop);
-            t.setDaemon(true);
             t.start();
         }
         initDone = false;

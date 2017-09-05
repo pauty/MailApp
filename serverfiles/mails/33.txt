@@ -1,0 +1,24 @@
+Server Error Message# 
+Edsger Dijkstra#dijkstra@mailapp.com
+Fatal error sending mail
+05/09/2017 18:03:50
+0
+-1
+A fatal error occurred while sending your mail.
+Mail server could not resolve the following addresses: 
+
+cicciobello@mailapp.com
+
+Please check for errors and retry.
+
+----------------------------------------------------------------
+
+original message:
+
+Subject: to fail
+From: dijkstra@mailapp.com
+To: cicciobello@mailapp.com
+Date: 05/09/2017   18:03:50
+
+|   should not work
+

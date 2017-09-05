@@ -21,10 +21,7 @@ import java.util.Scanner;
 import java.util.concurrent.*;
 import mailapp.EMail;
 import mailapp.User;
-import mailapp.server.task.AddFolderMailsTask;
-import mailapp.server.task.DeleteFolderMailsTask;
-import mailapp.server.task.ReadFolderMailsTask;
-import mailapp.server.task.SendMailTask;
+import mailapp.server.task.*;
 
 /**
  *
