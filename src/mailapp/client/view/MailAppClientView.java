@@ -34,24 +34,29 @@ public class MailAppClientView extends JFrame{
 
         @Override
         public void update(Observable o, Object o1) {
-            ConnectionManagerMessage msg = (ConnectionManagerMessage)o1;
-            
-            if(msg.getType() == ConnectionManagerMessage.Type.MAIL_FOLDER_UPDATE){
-                //check if updated folder was inbox, to show new mail notification
-                if(msg.getUpdatedFolderName().equals(MailServer.INBOX_FOLDERNAME)){
-                    List<EMail> newMails = connectionManager.getNewInboxMails();
-                    if(!newMails.isEmpty())
-                        showNewMailMessageDialog(newMails);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run(){
+                    ConnectionManagerMessage msg = (ConnectionManagerMessage)o1;
+                    if(msg.getType() == ConnectionManagerMessage.Type.MAIL_FOLDER_UPDATE){
+                        //check if updated folder was inbox, to show new mail notification
+                        if(msg.getUpdatedFolderName().equals(MailServer.INBOX_FOLDERNAME)){
+                            List<EMail> newMails = connectionManager.getNewInboxMails();
+                            if(!newMails.isEmpty())
+                                showNewMailMessageDialog(newMails);
+                        }
+                        //we update te view list only if it is the currently displayed list
+                        if(msg.getUpdatedFolderName().equals(inboxPanel.getCurrentFolderName())){
+                            inboxPanel.updateFolderMails();
+                        }
+                    }
+                    else if(msg.getType() == ConnectionManagerMessage.Type.DISCONNECT){
+                        userSelectionPanel.setErrorMessage("ERROR - Lost connection to server.");
+                        showUserSelectionPanel();
+                    }
                 }
-                //we update te view list only if it is the currently displayed list
-                if(msg.getUpdatedFolderName().equals(inboxPanel.getCurrentFolderName())){
-                    inboxPanel.updateFolderMails();
-                }
-            }
-            else if(msg.getType() == ConnectionManagerMessage.Type.DISCONNECT){
-                userSelectionPanel.setErrorMessage("ERROR - Lost connection to server.");
-                showUserSelectionPanel();
-            }
+            });      
         }
     }
     
@@ -91,6 +96,7 @@ public class MailAppClientView extends JFrame{
                     connectionManager.disconnect();
                 dispose();
                 System.out.println("exiting client");
+                //System.exit(0);
             }
         });
     }
@@ -138,6 +144,7 @@ public class MailAppClientView extends JFrame{
         JButton button = new JButton("OK");
         button.setHorizontalAlignment(SwingConstants.CENTER);
         button.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 dialog.dispose();   
             }
@@ -149,11 +156,11 @@ public class MailAppClientView extends JFrame{
         JPanel p2 = new JPanel();
         p2.add(button);
         contentPane.add(p2, BorderLayout.SOUTH);
-        
-        dialog.pack();
+ 
         dialog.setLocationRelativeTo(null);
         dialog.setSize(250,150);
         dialog.setMinimumSize(new Dimension(250,150));
+        dialog.pack();
         dialog.setVisible(true);
     }
     

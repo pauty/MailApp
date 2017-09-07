@@ -36,7 +36,7 @@ public class MailWriterPanel extends JPanel {
         public void actionPerformed(ActionEvent ae) {
             if(ae.getActionCommand().equals("Cancel")){
                 Object[] options = {"Yes","No"};
-                int res = JOptionPane.showOptionDialog(new JDialog(),
+                int res = JOptionPane.showOptionDialog(parentFrame,
                     "You haven't send this mail.\nAre you sure you want to discard it?",
                     "Warning",
                     JOptionPane.YES_NO_OPTION,
@@ -52,7 +52,7 @@ public class MailWriterPanel extends JPanel {
                 String subject = subjectField.getText();
                 String to = toField.getText();
                 if(subject.isEmpty() || to.isEmpty()){
-                    JOptionPane.showMessageDialog( new JDialog(),
+                    JOptionPane.showMessageDialog(parentFrame,
                         "Please fill both subject and\nto fields.",
                         "Invalid Field",
                         JOptionPane.ERROR_MESSAGE);
@@ -92,25 +92,32 @@ public class MailWriterPanel extends JPanel {
 
         setLayout(new BorderLayout());
 
-        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
         topPanel.setLayout(new BorderLayout());
 
         formalLabelPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
-        formalLabelPanel.setLayout(new GridLayout(2, 1));
+        //formalLabelPanel.setLayout(new GridLayout(2, 1));
+        formalLabelPanel.setLayout(new BoxLayout(formalLabelPanel, BoxLayout.PAGE_AXIS));
 
         subjectLabel.setFont(boldFont); 
         formalLabelPanel.add(subjectLabel);
+        
+        formalLabelPanel.add(Box.createRigidArea(new Dimension(10,10)));
 
         toLabel.setFont(boldFont); 
         formalLabelPanel.add(toLabel);
 
         topPanel.add(formalLabelPanel, BorderLayout.WEST);
 
-        fieldsPanel.setLayout(new GridLayout(2, 1));
-
+        //fieldsPanel.setLayout(new GridLayout(2, 1));
+        fieldsPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
+        fieldsPanel.setLayout(new BoxLayout(fieldsPanel, BoxLayout.PAGE_AXIS));
+        
         subjectField.setFont(normalFont); 
         fieldsPanel.add(subjectField);
-
+        
+        fieldsPanel.add(Box.createRigidArea(new Dimension(10,10)));
+        
         toField.setFont(normalFont);
         fieldsPanel.add(toField);
 

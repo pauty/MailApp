@@ -185,30 +185,25 @@ public class InboxPanel extends JPanel{
     }
     
     public synchronized void updateFolderMails(){
-        //the list model must be updated by swing event queue
-        SwingUtilities.invokeLater(new Runnable() {           
-            @Override
-            public void run(){
-                String folder = (String)folderComboBox.getSelectedItem();
-                List<EMail> mails = parentFrame.getConnectionManager().getFolderMails(folder);
-                
-                //Note: add happens in reverse order: newer mails are on top (lower list index)
-                if(mails.size() == listModel.size()){
-                    boolean modified = false;
-                    for(int i = 0; !modified && i < mails.size(); i++){
-                        if(!mails.get(i).equals(listModel.get(listModel.size() - 1 - i)))
-                            modified = true;
-                    }
-                    if(!modified)
-                        return;
-                }
-                
-                previousSelectedIndex = -2;
-                listModel.clear();
-                for(int i = mails.size() - 1; i >= 0; i--){
-                    listModel.addElement(mails.get(i));
-                }
+        //the list model must be updated by swing event queue (see update of main view)
+        String folder = (String)folderComboBox.getSelectedItem();
+        List<EMail> mails = parentFrame.getConnectionManager().getFolderMails(folder);
+
+        //Note: add happens in reverse order: newer mails are on top (lower list index)
+        if(mails.size() == listModel.size()){
+            boolean modified = false;
+            for(int i = 0; !modified && i < mails.size(); i++){
+                if(!mails.get(i).equals(listModel.get(listModel.size() - 1 - i)))
+                    modified = true;
             }
-        });       
+            if(!modified)
+                return;
+        }
+
+        previousSelectedIndex = -2;
+        listModel.clear();
+        for(int i = mails.size() - 1; i >= 0; i--){
+            listModel.addElement(mails.get(i));
+        }
     }
 }
